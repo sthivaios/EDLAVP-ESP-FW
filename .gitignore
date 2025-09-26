@@ -1,0 +1,78 @@
+# should be good enough, written with claude
+
+# ESP-IDF Build Output
+build/
+dist/
+*.bin
+*.elf
+*.map
+
+# ESP-IDF Configuration
+sdkconfig.old
+sdkconfig.defaults.*
+!sdkconfig.defaults
+
+# Dependencies and managed components
+dependencies.lock
+managed_components/
+
+# Python virtual environment (if using)
+venv/
+env/
+.venv/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# CLion specific
+cmake-build-*/
+.cmake/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Flash download tool files
+*.json
+
+# Component registry cache
+.component_hash
+
+# IDF monitor files
+.gdbinit
+
+# Backup files
+*.bak
+*.backup
+
+# Certificate and key files (be careful with these!)
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Test artifacts
+test_results/
+coverage/
+
+# Documentation build
+docs/_build/
+docs/doxygen-warning-log.txt
