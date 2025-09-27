@@ -1,5 +1,8 @@
 # should be good enough, written with claude
 
+# ESP-IDF config
+sdkconfig
+
 # ESP-IDF Build Output
 build/
 dist/
