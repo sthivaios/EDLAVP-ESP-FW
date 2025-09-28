@@ -1,16 +1,37 @@
+// Copyright (C) 2025 Stratos Thivaios
+//
+// This file is part of "EDLAVP-ESP-FW".
+//
+// "EDLAVP-ESP-FW" is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option) any
+// later version.
+//
+// "EDLAVP-ESP-FW" is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+// details.
+//
+// You should have received a copy of the GNU General Public License along with
+// "EDLAVP-ESP-FW". If not, see <https://www.gnu.org/licenses/>.
+
 #include "wifi_manager.h"
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_netif.h"
 #include "esp_wifi.h"
+#include "system_state.h"
 
-#define WIFI_SSID CONFIG_WIFI_PASSWORD
-#define WIFI_PASSWORD CONFIG_WIFI_MAXIMUM_RETRY
+// grab the config values (see Kconfig.projbuild)
+#define WIFI_SSID CONFIG_WIFI_SSID
+#define WIFI_PASSWORD CONFIG_WIFI_PASSWORD
+#define WIFI_MAX_RETRY CONFIG_WIFI_MAXIMUM_RETRY
 
 static const char *TAG = "WIFI";
 static int retry_count = 0;
 
-// function to map the possible error codes to log strings
+// Returns a "human-readable" error string for different Wi-Fi error
+// codes/reasons.
 static const char *get_disconnect_reason_string(uint8_t reason) {
   switch (reason) {
   case WIFI_REASON_UNSPECIFIED:
@@ -78,25 +99,41 @@ static const char *get_disconnect_reason_string(uint8_t reason) {
   }
 }
 
-// handler for wifi events
+/* Handles Wi-Fi-related events, such as a connection attempt starting, a
+ * successful connection or a disconnection. It then starts specific actions,
+ * logs stuff or sets event group bits to trigger other actions in other RTOS
+ * tasks */
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data) {
   if (event_id == WIFI_EVENT_STA_START) {
     ESP_LOGI(TAG, "WiFi started, trying to connect...");
+    // call function to start connecting to wifi
     esp_wifi_connect();
   } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
+    // set wifi connected bit
+    system_set_bits(SYS_BIT_WIFI_CONNECTED);
+    // reset the retry counter
+    retry_count = 0;
     ESP_LOGI(TAG, "Connected to WiFi");
   } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
+    // clear wifi connected and got-ip bit
+    system_clear_bits(SYS_BIT_WIFI_CONNECTED);
+    system_clear_bits(SYS_BIT_GOT_IP);
+
+    // grab the disconnection reason
     wifi_event_sta_disconnected_t *disconnected =
         (wifi_event_sta_disconnected_t *)event_data;
 
     ESP_LOGE(TAG, "WiFi disconnected! Reason: %s",
              get_disconnect_reason_string(disconnected->reason));
 
+    // add to the retry counter
     retry_count++;
-    if (retry_count <= CONFIG_WIFI_MAXIMUM_RETRY) {
+
+    // decide whether to continue or stop based on the number of retries
+    if (retry_count <= WIFI_MAX_RETRY) {
       ESP_LOGW(TAG, "Retry %d/%d - Attempting reconnection...", retry_count,
-               CONFIG_WIFI_MAXIMUM_RETRY);
+               WIFI_MAX_RETRY);
       esp_wifi_connect();
     } else {
       ESP_LOGE(TAG, "Max retries reached. Something is really wrong with the "
@@ -106,18 +143,24 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
   }
 }
 
-// handler for ip events
+// Handles IP-related events. For now only the "got ip" event.
 static void ip_event_handler(void *arg, esp_event_base_t event_base,
                              int32_t event_id, void *event_data) {
   if (event_id == IP_EVENT_STA_GOT_IP) {
+    // set the got-ip bit
+    system_set_bits(SYS_BIT_GOT_IP);
+
+    // grab the ip
     ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
+
+    // log it
     ESP_LOGI(TAG, "Got IP address: " IPSTR, IP2STR(&event->ip_info.ip));
   }
 }
 
-// main function to connect
+// Main function to connect to wifi
 void wifi_connect(void) {
-  esp_log_level_set("wifi", ESP_LOG_WARN); // Only show warnings and errors
+  esp_log_level_set("wifi", ESP_LOG_WARN); // make the wifi component shut up
   ESP_LOGI(TAG, "Setting up WiFi...");
 
   // initialize networking
@@ -135,16 +178,16 @@ void wifi_connect(void) {
   esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &ip_event_handler,
                              NULL);
 
-  // Set up WiFi config
+  // define the wifi config
   wifi_config_t wifi_config = {
       .sta =
           {
-              .ssid = CONFIG_WIFI_SSID,
-              .password = CONFIG_WIFI_PASSWORD,
+              .ssid = WIFI_SSID,
+              .password = WIFI_PASSWORD,
           },
   };
 
-  // Configure and start WiFi
+  // configure wifi and start
   esp_wifi_set_mode(WIFI_MODE_STA);
   esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
   esp_wifi_start();
