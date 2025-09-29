@@ -33,10 +33,11 @@ If you do wish to contribute, you are very welcome to do so. You should create a
 you want to
 work on that issue yourself, feel free to fork and open a PR referencing the issue.
 
-Note that if you fork this repository or create a new project out of it, you have to license it under GPLv3 too.
 See [LICENSE](LICENSE) for more.
 
 ## License
 
-EDLAVP-ESP-FW is licensed under the GNU General Public License v3 (GPLv3).  
+**Notice as of September 30, 2025: The project used to be licensed under GPLv3 but has now changed to MPL2.0.**
+
+EDLAVP-ESP-FW is licensed under the Mozilla Public License Version 2.0.  
 See the [LICENSE](./LICENSE) file for details.
