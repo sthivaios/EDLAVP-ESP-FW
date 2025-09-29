@@ -28,13 +28,16 @@ static const uint32_t SYNC_INTERVAL = 86400;
 void ntp_manager(void *pvParameters) {
   ESP_LOGI(TAG, "%s task started", TAG);
 
+  static char strftime_buf[64];
+  time_t now;
+  struct tm timeinfo;
+
   while (1) {
     ESP_LOGI(TAG, "Waiting to make sure ESP is connected to the internet");
     system_wait_for_bits(SYS_BIT_GOT_IP, pdTRUE, portMAX_DELAY);
-    ESP_LOGI(TAG, "Will now attempt to sync time, since ESP has been connected "
-                  "to the internet");
+    ESP_LOGI(TAG, "Will now attempt to sync time");
 
-    ESP_LOGI(TAG, "Cleared SYS_BIT_NTP_SYNCED before resyncing time");
+    ESP_LOGV(TAG, "Cleared SYS_BIT_NTP_SYNCED before resyncing time");
     system_clear_bits(SYS_BIT_NTP_SYNCED);
 
     ESP_LOGI(TAG, "Attempting to resync time with \"%s\"", NTP_SERVER);
@@ -46,10 +49,6 @@ void ntp_manager(void *pvParameters) {
     esp_netif_sntp_deinit();
     ESP_LOGI(TAG, "Time synced!");
 
-    time_t now;
-    char strftime_buf[64];
-    struct tm timeinfo;
-
     time(&now);
     // Set timezone to China Standard Time
     setenv("TZ", "UTC", 1);
@@ -60,9 +59,9 @@ void ntp_manager(void *pvParameters) {
     ESP_LOGI(TAG, "The current date/time UTC is: %s", strftime_buf);
 
     system_set_bits(SYS_BIT_NTP_SYNCED);
-    ESP_LOGI(TAG, "Set SYS_BIT_NTP_SYNCED again.");
+    ESP_LOGV(TAG, "Set SYS_BIT_NTP_SYNCED again.");
     ESP_LOGI(TAG, "Next NTP sync in: %d seconds", SYNC_INTERVAL);
 
-    vTaskDelay(pdMS_TO_TICKS(SYNC_INTERVAL * 1000));
+    vTaskDelay((SYNC_INTERVAL * 1000UL) / portTICK_PERIOD_MS);
   }
 }
