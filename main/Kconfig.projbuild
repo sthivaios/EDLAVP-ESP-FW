@@ -17,3 +17,11 @@ menu "WiFi Configuration"
         help
             Set the maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
 endmenu
+
+menu "NTP Timesync Configuration"
+    config TIMESYNC_INTERVAL
+        int "NTP Timesync Interval"
+        default 86400
+        help
+            Interval between NTP syncs, in seconds. Default is 86400 for once a day.
+endmenu

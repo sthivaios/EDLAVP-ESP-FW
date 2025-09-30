@@ -15,7 +15,7 @@
 
 static const char *TAG = "ntp_manager";
 static const char *NTP_SERVER = "pool.ntp.org";
-static const uint32_t SYNC_INTERVAL = 86400;
+static const uint32_t SYNC_INTERVAL = CONFIG_TIMESYNC_INTERVAL;
 
 void ntp_manager(void *pvParameters) {
   ESP_LOGI(TAG, "%s task started", TAG);
