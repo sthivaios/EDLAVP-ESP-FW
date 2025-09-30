@@ -20,6 +20,8 @@ static const uint32_t SYNC_INTERVAL = 86400;
 void ntp_manager(void *pvParameters) {
   ESP_LOGI(TAG, "%s task started", TAG);
 
+  ESP_LOGI(TAG, "SYNC_INTERVAL runtime value: %u", (unsigned)SYNC_INTERVAL);
+
   static char strftime_buf[64];
   time_t now;
   struct tm timeinfo;
@@ -35,14 +37,22 @@ void ntp_manager(void *pvParameters) {
     ESP_LOGI(TAG, "Attempting to resync time with \"%s\"", NTP_SERVER);
     esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG(NTP_SERVER);
     ESP_ERROR_CHECK(esp_netif_sntp_init(&config));
-    if (esp_netif_sntp_sync_wait(pdMS_TO_TICKS(10000)) != ESP_OK) {
-      ESP_LOGE(TAG, "Failed to sync time in 10 seconds");
-    }
+    const esp_err_t ret = esp_netif_sntp_sync_wait(pdMS_TO_TICKS(10000));
     esp_netif_sntp_deinit();
-    ESP_LOGI(TAG, "Time synced!");
+
+    if (ret == ESP_OK) {
+      ESP_LOGI(TAG, "Time synced successfully.");
+      system_set_bits(SYS_BIT_NTP_SYNCED);
+      ESP_LOGV(TAG, "Set SYS_BIT_NTP_SYNCED.");
+    } else {
+      ESP_LOGE(TAG, "Failed to sync time in 10 seconds (err=%d)", ret);
+      ESP_LOGW(TAG, "Will try to sync again in 10 seconds.");
+      vTaskDelay(pdMS_TO_TICKS(10000));
+      continue;
+    }
 
     time(&now);
-    // Set timezone to China Standard Time
+    // set timezone to utc
     setenv("TZ", "UTC", 1);
     tzset();
 
@@ -54,6 +64,6 @@ void ntp_manager(void *pvParameters) {
     ESP_LOGV(TAG, "Set SYS_BIT_NTP_SYNCED again.");
     ESP_LOGI(TAG, "Next NTP sync in: %d seconds", SYNC_INTERVAL);
 
-    vTaskDelay((SYNC_INTERVAL * 1000UL) / portTICK_PERIOD_MS);
+    vTaskDelay(pdMS_TO_TICKS(SYNC_INTERVAL * 1000UL));
   }
 }
