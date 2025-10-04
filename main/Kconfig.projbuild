@@ -43,3 +43,18 @@ menu "MQTT Configuration"
             help
                 The password to connect to the MQTT broker with.
 endmenu
+
+menu "I/O and Hardware Configuration"
+    menu "DS18B20 Temperature Sensor"
+        config HARDWARE_DS18B20_GPIO_PIN
+            int "Sensor GPIO pin"
+            default 17
+            help
+                The GPIO pin that the DS18B20 sensor is connected to.
+        config HARDWARE_DS18B20_MAX_SENSORS
+                    int "Max number of DS18B20 sensors (EXPERIMENTAL)"
+                    default 1
+                    help
+                        The maximum number of DS18B20 sensors that can be connected. Experimental!
+    endmenu
+endmenu
