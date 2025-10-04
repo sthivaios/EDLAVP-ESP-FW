@@ -10,11 +10,11 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "mqtt_manager.h"
 #include "ntp_manager.h"
 #include "nvs_flash.h"
 #include "system_state.h"
 #include "wifi_manager.h"
-#include <stdio.h>
 
 // static const char *TAG = "MAIN";
 
@@ -32,4 +32,7 @@ void app_main(void) {
   TaskHandle_t ntp_manager_handle;
   xTaskCreate(ntp_manager, "ntp_manager", NTP_MANAGER_TASK_STACK_SIZE, NULL, 1,
               &ntp_manager_handle);
+
+  // attempt to start mqtt stuff
+  mqtt_app_start();
 }
