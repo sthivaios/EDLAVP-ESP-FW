@@ -13,6 +13,7 @@
 #include "mqtt_manager.h"
 #include "ntp_manager.h"
 #include "nvs_flash.h"
+#include "sensor_manager.h"
 #include "system_state.h"
 #include "wifi_manager.h"
 
@@ -32,6 +33,11 @@ void app_main(void) {
   TaskHandle_t ntp_manager_handle;
   xTaskCreate(ntp_manager, "ntp_manager", NTP_MANAGER_TASK_STACK_SIZE, NULL, 1,
               &ntp_manager_handle);
+
+  // start the sensor_manager task
+  TaskHandle_t sensor_manager_handle;
+  xTaskCreate(sensor_manager, "sensor_manager", SENSOR_MANAGER_TASK_STACK_SIZE,
+              NULL, 1, &sensor_manager_handle);
 
   // attempt to start mqtt stuff
   mqtt_app_start();
