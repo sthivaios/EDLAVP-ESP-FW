@@ -25,3 +25,21 @@ menu "NTP Timesync Configuration"
         help
             Interval between NTP syncs, in seconds. Default is 86400 for once a day.
 endmenu
+
+menu "MQTT Configuration"
+    config MQTT_BROKER_URL
+        string "MQTT Broker URL"
+        default ""
+        help
+            The full URL for your MQTT broker.
+    config MQTT_USERNAME
+            string "MQTT username"
+            default ""
+            help
+                The username to connect to the MQTT broker with.
+    config MQTT_PASSWORD
+            string "MQTT password"
+            default ""
+            help
+                The password to connect to the MQTT broker with.
+endmenu
