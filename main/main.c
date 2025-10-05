@@ -26,6 +26,9 @@ void app_main(void) {
   // initialize event group bits
   system_state_init();
 
+  // initialize the sensor readout queue
+  readout_queue_init();
+
   // attempt to start wifi stuff
   wifi_connect();
 
