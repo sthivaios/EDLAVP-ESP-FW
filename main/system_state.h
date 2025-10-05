@@ -27,7 +27,7 @@ typedef struct {
 typedef SingleReadout ReadoutArray[CONFIG_HARDWARE_DS18B20_MAX_SENSORS];
 
 typedef struct {
-  SingleReadout *readouts;
+  ReadoutArray readouts;
   int readout_array_size;
 } FullReadout;
 
