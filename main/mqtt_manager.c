@@ -35,6 +35,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
 
   case MQTT_EVENT_DISCONNECTED:
     system_clear_bits(SYS_BIT_MQTT_CONNECTED);
+    ESP_LOGW(TAG, "Disconnected from MQTT broker... Will not publish anything until reconnection.");
     break;
 
   case MQTT_EVENT_SUBSCRIBED:
@@ -94,32 +95,20 @@ void mqtt_app_start(void) {
   ESP_ERROR_CHECK(esp_mqtt_client_start(mqtt_client));
 }
 
-static void mqtt_publish_readout(float readout) {
+static void mqtt_publish_readout(const Readout readout) {
 
-  system_wait_for_bits(SYS_BIT_NTP_SYNCED, pdTRUE, portMAX_DELAY);
-
-  // declare time variables
-  static char strftime_buf[64];
-  time_t now;
-  struct tm timeinfo;
-
-  // get the time
-  time(&now);
-
-  // time stuff that idk what its doing but its doing it
-  localtime_r(&now, &timeinfo);
-  strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+  system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
 
   // create the json object
   cJSON *mqtt_message_object = cJSON_CreateObject();
-  cJSON_AddStringToObject(mqtt_message_object, "utc_timestamp", strftime_buf);
-  cJSON_AddNumberToObject(mqtt_message_object, "value", readout);
+  cJSON_AddNumberToObject(mqtt_message_object, "utc_timestamp", (long int)readout.timestamp);
+  cJSON_AddNumberToObject(mqtt_message_object, "value", readout.value);
 
   char *json_string = cJSON_PrintUnformatted(mqtt_message_object);
   cJSON_Delete(mqtt_message_object);
 
   const int msg_id = esp_mqtt_client_publish(
-      mqtt_client, CONFIG_MQTT_SENSOR_READOUT_TOPIC, json_string, 0, 0, 0);
+      mqtt_client, CONFIG_MQTT_SENSOR_READOUT_TOPIC, json_string, (int)strlen(json_string), 0, 0);
   ESP_LOGI(TAG, "sent publish successfully, msg_id=%d", msg_id);
 
   free(json_string);
@@ -131,7 +120,7 @@ void mqtt_manager(void *pvParameters) {
   mqtt_app_start();
 
   while (1) {
-    float readout;
+    Readout readout;
 
     readout_queue_receive(&readout, portMAX_DELAY);
     mqtt_publish_readout(readout);
