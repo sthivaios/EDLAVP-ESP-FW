@@ -1,5 +1,6 @@
 #include "mqtt_manager.h"
 
+#include "cJSON.h"
 #include "esp_netif.h"
 #include <inttypes.h>
 #include <stdint.h>
@@ -8,6 +9,8 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 #include "system_state.h"
+
+#include <time.h>
 
 static const char *TAG = "mqtt_manager";
 
@@ -95,4 +98,51 @@ void mqtt_app_start(void) {
                        portMAX_DELAY);
   ESP_LOGI(TAG, "Will now attempt to connect to the MQTT broker.");
   ESP_ERROR_CHECK(esp_mqtt_client_start(mqtt_client));
+}
+
+static void mqtt_publish_readout(float readout) {
+
+  system_wait_for_bits(SYS_BIT_NTP_SYNCED, pdTRUE, portMAX_DELAY);
+
+  // declare time variables
+  static char strftime_buf[64];
+  time_t now;
+  struct tm timeinfo;
+
+  // get the time
+  time(&now);
+  // set timezone to utc
+  setenv("TZ", "UTC", 1);
+  tzset();
+
+  // time stuff that idk what its doing but its doing it
+  localtime_r(&now, &timeinfo);
+  strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+
+  // create the json object
+  cJSON *mqtt_message_object = cJSON_CreateObject();
+  cJSON_AddStringToObject(mqtt_message_object, "utc_timestamp", strftime_buf);
+  cJSON_AddNumberToObject(mqtt_message_object, "value", readout);
+
+  char *json_string = cJSON_PrintUnformatted(mqtt_message_object);
+  cJSON_Delete(mqtt_message_object);
+
+  const int msg_id = esp_mqtt_client_publish(
+      mqtt_client, CONFIG_MQTT_SENSOR_READOUT_TOPIC, json_string, 0, 0, 0);
+  ESP_LOGI(TAG, "sent publish successfully, msg_id=%d", msg_id);
+
+  free(json_string);
+}
+
+void mqtt_manager(void *pvParameters) {
+  ESP_LOGI(TAG, "%s task started", TAG);
+
+  while (1) {
+    float readout;
+
+    readout_queue_receive(&readout, portMAX_DELAY);
+    mqtt_publish_readout(readout);
+
+    vTaskDelay(pdMS_TO_TICKS(10));
+  }
 }
