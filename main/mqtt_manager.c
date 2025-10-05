@@ -35,7 +35,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
 
   case MQTT_EVENT_DISCONNECTED:
     system_clear_bits(SYS_BIT_MQTT_CONNECTED);
-    ESP_LOGW(TAG, "Disconnected from MQTT broker... Will not publish anything until reconnection.");
+    ESP_LOGW(TAG, "Disconnected from MQTT broker... Will not publish anything "
+                  "until reconnection.");
     break;
 
   case MQTT_EVENT_SUBSCRIBED:
@@ -101,14 +102,16 @@ static void mqtt_publish_readout(const Readout readout) {
 
   // create the json object
   cJSON *mqtt_message_object = cJSON_CreateObject();
-  cJSON_AddNumberToObject(mqtt_message_object, "utc_timestamp", (long int)readout.timestamp);
+  cJSON_AddNumberToObject(mqtt_message_object, "utc_timestamp",
+                          (long int)readout.timestamp);
   cJSON_AddNumberToObject(mqtt_message_object, "value", readout.value);
 
   char *json_string = cJSON_PrintUnformatted(mqtt_message_object);
   cJSON_Delete(mqtt_message_object);
 
-  const int msg_id = esp_mqtt_client_publish(
-      mqtt_client, CONFIG_MQTT_SENSOR_READOUT_TOPIC, json_string, (int)strlen(json_string), 0, 0);
+  const int msg_id =
+      esp_mqtt_client_publish(mqtt_client, CONFIG_MQTT_SENSOR_READOUT_TOPIC,
+                              json_string, (int)strlen(json_string), 0, 0);
   ESP_LOGI(TAG, "sent publish successfully, msg_id=%d", msg_id);
 
   free(json_string);
