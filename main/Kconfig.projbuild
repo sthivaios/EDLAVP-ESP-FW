@@ -42,6 +42,11 @@ menu "MQTT Configuration"
             default ""
             help
                 The password to connect to the MQTT broker with.
+    config MQTT_SENSOR_READOUT_TOPIC
+            string "DS18B20 sensor readout topic"
+            default "/edlavp/ds18b20"
+            help
+                The MQTT topic where to publish the DS18B20 sensor readouts/values.
 endmenu
 
 menu "I/O and Hardware Configuration"
