@@ -68,7 +68,9 @@ void sensor_manager(void *pvParameters) {
       ESP_ERROR_CHECK(ds18b20_get_temperature(ds18b20s[i], &temperature));
       ESP_LOGI(TAG, "temperature read from DS18B20[%d]: %.2fC", i, temperature);
 
-      readout_queue_send(temperature, 0);
+      if (readout_queue_send(temperature, pdMS_TO_TICKS(100)) != pdPASS) {
+        ESP_LOGW(TAG, "Queue full, dropping reading!");
+      }
     }
 
     vTaskDelay(pdMS_TO_TICKS(5000));
