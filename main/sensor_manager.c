@@ -67,6 +67,8 @@ void sensor_manager(void *pvParameters) {
     for (int i = 0; i < ds18b20_device_num; i++) {
       ESP_ERROR_CHECK(ds18b20_get_temperature(ds18b20s[i], &temperature));
       ESP_LOGI(TAG, "temperature read from DS18B20[%d]: %.2fC", i, temperature);
+
+      readout_queue_send(temperature, 0);
     }
 
     vTaskDelay(pdMS_TO_TICKS(5000));
