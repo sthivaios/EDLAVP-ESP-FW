@@ -22,10 +22,7 @@ void sensor_manager(void *pvParameters) {
           .en_pull_up = true, // enable the internal pull-up resistor in case
                               // the external device didn't have one
       }};
-  onewire_bus_rmt_config_t rmt_config = {
-      .max_rx_bytes =
-          10, // 1byte ROM command + 8byte ROM number + 1byte device command
-  };
+  onewire_bus_rmt_config_t rmt_config = {.max_rx_bytes = ONEWIRE_MAX_RX_BYTES};
   ESP_ERROR_CHECK(onewire_new_bus_rmt(&bus_config, &rmt_config, &bus));
 
   int ds18b20_device_num = 0;
