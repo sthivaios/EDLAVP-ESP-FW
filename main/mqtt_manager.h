@@ -3,7 +3,7 @@
 
 void mqtt_app_start();
 
-#define MQTT_MANAGER_TASK_STACK_SIZE 4096
+#define MQTT_MANAGER_TASK_STACK_SIZE 8192
 
 void mqtt_manager(void *pvParameters);
 

@@ -22,6 +22,9 @@
 // static const char *TAG = "MAIN";
 
 void app_main(void) {
+  // initialize the sensor readout queue
+  readout_queue_init();
+
   // initialize NVS
   ESP_ERROR_CHECK(nvs_flash_init());
 
@@ -31,9 +34,6 @@ void app_main(void) {
 
   // initialize event group bits
   system_state_init();
-
-  // initialize the sensor readout queue
-  readout_queue_init();
 
   // attempt to start wifi stuff
   wifi_connect();
