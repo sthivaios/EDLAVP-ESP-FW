@@ -92,7 +92,7 @@ void sensor_manager(void *pvParameters) {
       all_readouts[readout_count++] = readout;
     }
 
-    FullReadout full_readout;
+    FullReadout full_readout = {0};
     full_readout.readout_array_size = readout_count;
     memcpy(full_readout.readouts, all_readouts,
            readout_count * sizeof(SingleReadout));
