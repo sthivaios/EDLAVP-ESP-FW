@@ -90,8 +90,8 @@ void mqtt_app_start(void) {
 
   mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
 
-  esp_mqtt_client_register_event(mqtt_client, ESP_EVENT_ANY_ID,
-                                 mqtt_event_handler, NULL);
+  ESP_ERROR_CHECK(esp_mqtt_client_register_event(mqtt_client, ESP_EVENT_ANY_ID,
+                                                 mqtt_event_handler, NULL));
 
   ESP_LOGI(TAG, "Waiting to connect to wifi first.");
   system_wait_for_bits(SYS_BIT_GOT_IP | SYS_BIT_NTP_SYNCED, pdTRUE,
@@ -111,9 +111,6 @@ static void mqtt_publish_readout(float readout) {
 
   // get the time
   time(&now);
-  // set timezone to utc
-  setenv("TZ", "UTC", 1);
-  tzset();
 
   // time stuff that idk what its doing but its doing it
   localtime_r(&now, &timeinfo);
@@ -137,12 +134,12 @@ static void mqtt_publish_readout(float readout) {
 void mqtt_manager(void *pvParameters) {
   ESP_LOGI(TAG, "%s task started", TAG);
 
+  mqtt_app_start();
+
   while (1) {
     float readout;
 
     readout_queue_receive(&readout, portMAX_DELAY);
     mqtt_publish_readout(readout);
-
-    vTaskDelay(pdMS_TO_TICKS(10));
   }
 }
