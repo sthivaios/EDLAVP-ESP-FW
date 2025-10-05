@@ -54,6 +54,12 @@ void sensor_manager(void *pvParameters) {
       }
     }
   } while (search_result != ESP_ERR_NOT_FOUND);
+
+  if (ds18b20_device_num == 0) {
+    ESP_LOGE(TAG, "No sensors found! Suspending sensor_manager task.");
+    vTaskSuspend(NULL);
+  }
+
   ESP_ERROR_CHECK(onewire_del_device_iter(iter));
   ESP_LOGI(TAG, "Searching done, %d DS18B20 device(s) found",
            ds18b20_device_num);
