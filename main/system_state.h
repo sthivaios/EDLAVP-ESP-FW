@@ -12,7 +12,6 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
-#include <stdint.h>
 
 #define SYS_BIT_WIFI_CONNECTED (1 << 0)
 #define SYS_BIT_GOT_IP (1 << 1)
@@ -23,9 +22,16 @@
 void system_state_init(void);
 
 // event group wrappers
+
 void system_set_bits(EventBits_t bits);
 void system_clear_bits(EventBits_t bits);
 EventBits_t system_wait_for_bits(EventBits_t bits, BaseType_t wait_for_all,
                                  TickType_t ticks_to_wait);
+
+// sensor readout queue wrappers
+
+void readout_queue_init(void);
+BaseType_t readout_queue_send(float value, TickType_t ticks_to_wait);
+BaseType_t readout_queue_receive(float *value, TickType_t ticks_to_wait);
 
 #endif //_SYSTEM_STATE_H

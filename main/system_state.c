@@ -14,6 +14,54 @@
 static const char *TAG = "SYSTEM_STATE";
 static EventGroupHandle_t s_event_group = NULL;
 
+static QueueHandle_t readout_queue;
+
+/**
+ * @brief Initializes the sensor readout queue.
+ *
+ * Creates a FreeRTOS queue that holds floating-point sensor readings.
+ * Must be called before any send/receive operations.
+ */
+void readout_queue_init(void) {
+  // Create a queue that can hold 5 floats
+  readout_queue = xQueueCreate(5, sizeof(float));
+  if (readout_queue == NULL) {
+    printf("Queue creation failed!\n");
+  }
+}
+
+/**
+ * @brief Sends a sensor reading to the readout queue.
+ *
+ * If the queue is full, the function blocks for up to @p ticks_to_wait
+ * before returning. Use 0 for a non-blocking send.
+ *
+ * @param value Sensor reading to enqueue.
+ * @param ticks_to_wait Maximum number of ticks to wait if the queue is full.
+ * @return pdPASS if the value was successfully enqueued, pdFAIL otherwise.
+ */
+BaseType_t readout_queue_send(float value, TickType_t ticks_to_wait) {
+  if (readout_queue == NULL)
+    return pdFAIL;
+  return xQueueSend(readout_queue, &value, ticks_to_wait);
+}
+
+/**
+ * @brief Receives a sensor reading from the readout queue.
+ *
+ * If the queue is empty, the function blocks for up to @p ticks_to_wait
+ * before returning. Use 0 for a non-blocking receive.
+ *
+ * @param value Pointer to a variable to store the received sensor reading.
+ * @param ticks_to_wait Maximum number of ticks to wait if the queue is empty.
+ * @return pdPASS if a value was successfully received, pdFAIL otherwise.
+ */
+BaseType_t readout_queue_receive(float *value, TickType_t ticks_to_wait) {
+  if (readout_queue == NULL || value == NULL)
+    return pdFAIL;
+  return xQueueReceive(readout_queue, value, ticks_to_wait);
+}
+
 void system_state_init(void) {
   if (s_event_group == NULL) {
     s_event_group = xEventGroupCreate();
