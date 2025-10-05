@@ -17,11 +17,17 @@
 #include "system_state.h"
 #include "wifi_manager.h"
 
+#include <time.h>
+
 // static const char *TAG = "MAIN";
 
 void app_main(void) {
   // initialize NVS
-  nvs_flash_init();
+  ESP_ERROR_CHECK(nvs_flash_init());
+
+  // set the timezone to UTC
+  setenv("TZ", "UTC", 1);
+  tzset();
 
   // initialize event group bits
   system_state_init();
@@ -34,7 +40,7 @@ void app_main(void) {
 
   // start the ntp_manager task
   TaskHandle_t ntp_manager_handle;
-  xTaskCreate(ntp_manager, "ntp_manager", NTP_MANAGER_TASK_STACK_SIZE, NULL, 1,
+  xTaskCreate(ntp_manager, "ntp_manager", NTP_MANAGER_TASK_STACK_SIZE, NULL, 3,
               &ntp_manager_handle);
 
   // start the sensor_manager task
@@ -42,11 +48,8 @@ void app_main(void) {
   xTaskCreate(sensor_manager, "sensor_manager", SENSOR_MANAGER_TASK_STACK_SIZE,
               NULL, 2, &sensor_manager_handle);
 
-  // start the sensor_manager task
+  // start the mqtt_manager task
   TaskHandle_t mqtt_manager_handle;
   xTaskCreate(mqtt_manager, "mqtt_manager", MQTT_MANAGER_TASK_STACK_SIZE, NULL,
-              3, &mqtt_manager_handle);
-
-  // attempt to start mqtt stuff
-  mqtt_app_start();
+              1, &mqtt_manager_handle);
 }
