@@ -40,7 +40,12 @@ void app_main(void) {
   // start the sensor_manager task
   TaskHandle_t sensor_manager_handle;
   xTaskCreate(sensor_manager, "sensor_manager", SENSOR_MANAGER_TASK_STACK_SIZE,
-              NULL, 1, &sensor_manager_handle);
+              NULL, 2, &sensor_manager_handle);
+
+  // start the sensor_manager task
+  TaskHandle_t mqtt_manager_handle;
+  xTaskCreate(mqtt_manager, "mqtt_manager", MQTT_MANAGER_TASK_STACK_SIZE, NULL,
+              3, &mqtt_manager_handle);
 
   // attempt to start mqtt stuff
   mqtt_app_start();
