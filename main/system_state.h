@@ -22,7 +22,14 @@
 typedef struct {
   time_t timestamp;
   float value;
-} Readout;
+} SingleReadout;
+
+typedef SingleReadout ReadoutArray[CONFIG_HARDWARE_DS18B20_MAX_SENSORS];
+
+typedef struct {
+  SingleReadout *readouts;
+  int readout_array_size;
+} FullReadout;
 
 // should be called early in app_main()
 void system_state_init(void);
@@ -37,8 +44,9 @@ EventBits_t system_wait_for_bits(EventBits_t bits, BaseType_t wait_for_all,
 // sensor readout queue wrappers
 
 void readout_queue_init(void);
-BaseType_t readout_queue_send(Readout readout_struct, TickType_t ticks_to_wait);
-BaseType_t readout_queue_receive(Readout *readout_struct,
+BaseType_t readout_queue_send(FullReadout full_readout,
+                              TickType_t ticks_to_wait);
+BaseType_t readout_queue_receive(FullReadout *full_readout,
                                  TickType_t ticks_to_wait);
 
 #endif //_SYSTEM_STATE_H

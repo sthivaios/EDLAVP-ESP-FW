@@ -6,8 +6,15 @@
 #include "onewire_bus_impl_rmt.h"
 #include "onewire_device.h"
 #include "system_state.h"
+#include "time.h"
 
 static const char *TAG = "sensor_manager";
+
+static void send_full_readout_to_queue(FullReadout full_readout) {
+  if (readout_queue_send(full_readout, pdMS_TO_TICKS(100)) != pdPASS) {
+    ESP_LOGW(TAG, "Queue full, dropping readout!");
+  }
+}
 
 void sensor_manager(void *pvParameters) {
   system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
@@ -65,16 +72,32 @@ void sensor_manager(void *pvParameters) {
            ds18b20_device_num);
 
   while (1) {
+    ReadoutArray all_readouts;
+    int readout_count = 0;
     float temperature;
     ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
     for (int i = 0; i < ds18b20_device_num; i++) {
+      system_wait_for_bits(SYS_BIT_NTP_SYNCED, pdTRUE, portMAX_DELAY);
       ESP_ERROR_CHECK(ds18b20_get_temperature(ds18b20s[i], &temperature));
-      ESP_LOGI(TAG, "temperature read from DS18B20[%d]: %.2fC", i, temperature);
+      // get the time
+      time_t now;
+      time(&now);
+      ESP_LOGI(TAG, "Temperature read from DS18B20[%d]: %f", i, temperature);
 
-      if (readout_queue_send(temperature, pdMS_TO_TICKS(100)) != pdPASS) {
-        ESP_LOGW(TAG, "Queue full, dropping reading!");
-      }
+      const SingleReadout readout = {
+          .timestamp = now,
+          .value = temperature,
+      };
+
+      all_readouts[readout_count++] = readout;
     }
+
+    FullReadout full_readout;
+    full_readout.readout_array_size = readout_count;
+    memcpy(full_readout.readouts, all_readouts,
+           readout_count * sizeof(SingleReadout));
+
+    send_full_readout_to_queue(full_readout);
 
     vTaskDelay(pdMS_TO_TICKS(5000));
   }

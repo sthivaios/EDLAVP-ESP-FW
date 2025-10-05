@@ -24,7 +24,7 @@ static QueueHandle_t readout_queue;
  */
 void readout_queue_init(void) {
   // Create a queue that can hold 10 strings
-  readout_queue = xQueueCreate(10, sizeof(Readout));
+  readout_queue = xQueueCreate(10, sizeof(FullReadout));
   if (readout_queue == NULL) {
     printf("Queue creation failed!\n");
   }
@@ -36,15 +36,15 @@ void readout_queue_init(void) {
  * If the queue is full, the function blocks for up to @p ticks_to_wait
  * before returning. Use 0 for a non-blocking send.
  *
- * @param readout_struct Readout to enqueue.
+ * @param full_readout Struct of the full readout to enqueue.
  * @param ticks_to_wait Maximum number of ticks to wait if the queue is full.
  * @return pdPASS if the value was successfully enqueued, pdFAIL otherwise.
  */
-BaseType_t readout_queue_send(Readout readout_struct,
+BaseType_t readout_queue_send(FullReadout full_readout,
                               TickType_t ticks_to_wait) {
   if (readout_queue == NULL)
     return pdFAIL;
-  return xQueueSend(readout_queue, &readout_struct, ticks_to_wait);
+  return xQueueSend(readout_queue, &full_readout, ticks_to_wait);
 }
 
 /**
@@ -53,16 +53,16 @@ BaseType_t readout_queue_send(Readout readout_struct,
  * If the queue is empty, the function blocks for up to @p ticks_to_wait
  * before returning. Use 0 for a non-blocking receive.
  *
- * @param readout_struct Pointer to a variable to store the received readout
- * struct.
+ * @param full_readout Pointer to a variable to store the received struct of
+ * the full readout.
  * @param ticks_to_wait Maximum number of ticks to wait if the queue is empty.
  * @return pdPASS if a value was successfully received, pdFAIL otherwise.
  */
-BaseType_t readout_queue_receive(Readout *readout_struct,
+BaseType_t readout_queue_receive(FullReadout *full_readout,
                                  TickType_t ticks_to_wait) {
-  if (readout_queue == NULL || readout_struct == NULL)
+  if (readout_queue == NULL || full_readout == NULL)
     return pdFAIL;
-  return xQueueReceive(readout_queue, readout_struct, ticks_to_wait);
+  return xQueueReceive(readout_queue, full_readout, ticks_to_wait);
 }
 
 void system_state_init(void) {

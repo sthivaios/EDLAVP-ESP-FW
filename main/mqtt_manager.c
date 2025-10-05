@@ -96,18 +96,25 @@ void mqtt_app_start(void) {
   ESP_ERROR_CHECK(esp_mqtt_client_start(mqtt_client));
 }
 
-static void mqtt_publish_readout(const Readout readout) {
+static void mqtt_publish_readout(const FullReadout full_readout) {
 
   system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
 
-  // create the json object
-  cJSON *mqtt_message_object = cJSON_CreateObject();
-  cJSON_AddNumberToObject(mqtt_message_object, "utc_timestamp",
-                          (long int)readout.timestamp);
-  cJSON_AddNumberToObject(mqtt_message_object, "value", readout.value);
+  cJSON *json_array = cJSON_CreateArray();
+  for (size_t i = 0; i < full_readout.readout_array_size; i++) {
+    cJSON *obj = cJSON_CreateObject();
+    if (!obj)
+      continue;
 
-  char *json_string = cJSON_PrintUnformatted(mqtt_message_object);
-  cJSON_Delete(mqtt_message_object);
+    cJSON_AddNumberToObject(obj, "timestamp",
+                            (double)full_readout.readouts[i].timestamp);
+    cJSON_AddNumberToObject(obj, "value", full_readout.readouts[i].value);
+
+    cJSON_AddItemToArray(json_array, obj); // array takes ownership
+  }
+
+  char *json_string = cJSON_PrintUnformatted(json_array);
+  cJSON_Delete(json_array);
 
   const int msg_id =
       esp_mqtt_client_publish(mqtt_client, CONFIG_MQTT_SENSOR_READOUT_TOPIC,
@@ -123,9 +130,9 @@ void mqtt_manager(void *pvParameters) {
   mqtt_app_start();
 
   while (1) {
-    Readout readout;
+    FullReadout full_readout;
 
-    readout_queue_receive(&readout, portMAX_DELAY);
-    mqtt_publish_readout(readout);
+    readout_queue_receive(&full_readout, portMAX_DELAY);
+    mqtt_publish_readout(full_readout);
   }
 }
