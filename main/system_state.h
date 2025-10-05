@@ -12,11 +12,17 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
+#include "time.h"
 
 #define SYS_BIT_WIFI_CONNECTED (1 << 0)
 #define SYS_BIT_GOT_IP (1 << 1)
 #define SYS_BIT_NTP_SYNCED (1 << 2)
 #define SYS_BIT_MQTT_CONNECTED (1 << 3)
+
+typedef struct {
+  time_t timestamp;
+  float value;
+} Readout;
 
 // should be called early in app_main()
 void system_state_init(void);
@@ -31,7 +37,8 @@ EventBits_t system_wait_for_bits(EventBits_t bits, BaseType_t wait_for_all,
 // sensor readout queue wrappers
 
 void readout_queue_init(void);
-BaseType_t readout_queue_send(float value, TickType_t ticks_to_wait);
-BaseType_t readout_queue_receive(float *value, TickType_t ticks_to_wait);
+BaseType_t readout_queue_send(Readout readout_struct, TickType_t ticks_to_wait);
+BaseType_t readout_queue_receive(Readout *readout_struct,
+                                 TickType_t ticks_to_wait);
 
 #endif //_SYSTEM_STATE_H
