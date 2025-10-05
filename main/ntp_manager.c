@@ -52,9 +52,6 @@ void ntp_manager(void *pvParameters) {
     }
 
     time(&now);
-    // set timezone to utc
-    setenv("TZ", "UTC", 1);
-    tzset();
 
     localtime_r(&now, &timeinfo);
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
