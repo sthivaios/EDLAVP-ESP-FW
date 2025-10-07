@@ -26,7 +26,7 @@ void readout_queue_init(void) {
   // Create a queue that can hold 10 strings
   readout_queue = xQueueCreate(10, sizeof(FullReadout));
   if (readout_queue == NULL) {
-    printf("Queue creation failed!\n");
+    ESP_LOGE(TAG, "Queue creation failed!");
   }
 }
 
