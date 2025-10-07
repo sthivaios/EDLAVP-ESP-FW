@@ -33,7 +33,6 @@ void sensor_manager(void *pvParameters) {
   ESP_ERROR_CHECK(onewire_new_bus_rmt(&bus_config, &rmt_config, &bus));
 
   int ds18b20_device_num = 0;
-  ds18b20_device_handle_t ds18b20s[CONFIG_HARDWARE_DS18B20_MAX_SENSORS];
   onewire_device_iter_handle_t iter = NULL;
   onewire_device_t next_onewire_device;
   esp_err_t search_result = ESP_OK;
@@ -49,9 +48,10 @@ void sensor_manager(void *pvParameters) {
       onewire_device_address_t address;
       // check if the device is a DS18B20, if so, return the ds18b20 handle
       if (ds18b20_new_device_from_enumeration(&next_onewire_device, &ds_cfg,
-                                              &ds18b20s[ds18b20_device_num]) ==
+                                              &sensors[ds18b20_device_num].handle) ==
           ESP_OK) {
-        ds18b20_get_device_address(ds18b20s[ds18b20_device_num], &address);
+        ds18b20_get_device_address(sensors[ds18b20_device_num].handle, &address);
+        sensors[ds18b20_device_num].address = address;
         ESP_LOGI(TAG, "Found a DS18B20[%d], address: %016llX",
                  ds18b20_device_num, address);
         ds18b20_device_num++;
@@ -78,7 +78,7 @@ void sensor_manager(void *pvParameters) {
     ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
     for (int i = 0; i < ds18b20_device_num; i++) {
       system_wait_for_bits(SYS_BIT_NTP_SYNCED, pdTRUE, portMAX_DELAY);
-      ESP_ERROR_CHECK(ds18b20_get_temperature(ds18b20s[i], &temperature));
+      ESP_ERROR_CHECK(ds18b20_get_temperature(sensors[i].handle, &temperature));
       // get the time
       time_t now;
       time(&now);
@@ -87,6 +87,7 @@ void sensor_manager(void *pvParameters) {
       const SingleReadout readout = {
           .timestamp = now,
           .value = temperature,
+          .address = sensors[i].address
       };
 
       all_readouts[readout_count++] = readout;
