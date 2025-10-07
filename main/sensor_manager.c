@@ -47,10 +47,11 @@ void sensor_manager(void *pvParameters) {
       ds18b20_config_t ds_cfg = {};
       onewire_device_address_t address;
       // check if the device is a DS18B20, if so, return the ds18b20 handle
-      if (ds18b20_new_device_from_enumeration(&next_onewire_device, &ds_cfg,
-                                              &sensors[ds18b20_device_num].handle) ==
-          ESP_OK) {
-        ds18b20_get_device_address(sensors[ds18b20_device_num].handle, &address);
+      if (ds18b20_new_device_from_enumeration(
+              &next_onewire_device, &ds_cfg,
+              &sensors[ds18b20_device_num].handle) == ESP_OK) {
+        ds18b20_get_device_address(sensors[ds18b20_device_num].handle,
+                                   &address);
         sensors[ds18b20_device_num].address = address;
         ESP_LOGI(TAG, "Found a DS18B20[%d], address: %016llX",
                  ds18b20_device_num, address);
@@ -84,11 +85,9 @@ void sensor_manager(void *pvParameters) {
       time(&now);
       ESP_LOGI(TAG, "Temperature read from DS18B20[%d]: %f", i, temperature);
 
-      const SingleReadout readout = {
-          .timestamp = now,
-          .value = temperature,
-          .address = sensors[i].address
-      };
+      const SingleReadout readout = {.timestamp = now,
+                                     .value = temperature,
+                                     .address = sensors[i].address};
 
       all_readouts[readout_count++] = readout;
     }
