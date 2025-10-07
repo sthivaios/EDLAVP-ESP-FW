@@ -25,8 +25,6 @@ typedef struct {
   uint64_t address;
 } SensorWithAddress;
 
-static SensorWithAddress sensors[CONFIG_HARDWARE_DS18B20_MAX_SENSORS];
-
 typedef struct {
   time_t timestamp;
   float value;

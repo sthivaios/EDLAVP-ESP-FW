@@ -10,6 +10,8 @@
 
 static const char *TAG = "sensor_manager";
 
+static SensorWithAddress sensors[CONFIG_HARDWARE_DS18B20_MAX_SENSORS];
+
 static void send_full_readout_to_queue(FullReadout full_readout) {
   if (readout_queue_send(full_readout, pdMS_TO_TICKS(100)) != pdPASS) {
     ESP_LOGW(TAG, "Queue full, dropping readout!");
