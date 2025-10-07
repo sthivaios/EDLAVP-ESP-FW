@@ -23,8 +23,8 @@ static QueueHandle_t readout_queue;
  * Must be called before any send/receive operations.
  */
 void readout_queue_init(void) {
-  // Create a queue that can hold 10 strings
-  readout_queue = xQueueCreate(10, sizeof(FullReadout));
+  readout_queue = xQueueCreate(CONFIG_SOFTWARE_DS18B20_READOUT_QUEUE_SIZE,
+                               sizeof(FullReadout));
   if (readout_queue == NULL) {
     ESP_LOGE(TAG, "Queue creation failed!");
   }

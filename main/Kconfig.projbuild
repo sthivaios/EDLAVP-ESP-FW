@@ -56,6 +56,11 @@ menu "I/O and Hardware Configuration"
             default 17
             help
                 The GPIO pin that the DS18B20 sensor is connected to.
+        config SOFTWARE_DS18B20_READOUT_QUEUE_SIZE
+            int "Sensor readout queue size"
+            default 10
+            help
+                The amount of readouts the readout queue can hold (to be published) before overflowing.
         config HARDWARE_DS18B20_MAX_SENSORS
                     int "Max number of DS18B20 sensors (EXPERIMENTAL)"
                     default 1
