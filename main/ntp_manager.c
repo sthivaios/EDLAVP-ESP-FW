@@ -37,7 +37,7 @@ void ntp_manager(void *pvParameters) {
     ESP_LOGI(TAG, "Attempting to resync time with \"%s\"", NTP_SERVER);
     esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG(NTP_SERVER);
     ESP_ERROR_CHECK(esp_netif_sntp_init(&config));
-    const esp_err_t ret = esp_netif_sntp_sync_wait(pdMS_TO_TICKS(10000));
+    const esp_err_t ret = esp_netif_sntp_sync_wait(pdMS_TO_TICKS(CONFIG_TIMESYNC_TIMEOUT * 1000UL));
     esp_netif_sntp_deinit();
 
     if (ret == ESP_OK) {
@@ -47,7 +47,7 @@ void ntp_manager(void *pvParameters) {
     } else {
       ESP_LOGE(TAG, "Failed to sync time in 10 seconds (err=%d)", ret);
       ESP_LOGW(TAG, "Will try to sync again in 10 seconds.");
-      vTaskDelay(pdMS_TO_TICKS(10000));
+      vTaskDelay(pdMS_TO_TICKS(CONFIG_TIMESYNC_ERROR_RETRY_COOLDOWN * 1000UL));
       continue;
     }
 

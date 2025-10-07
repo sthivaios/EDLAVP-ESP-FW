@@ -24,6 +24,16 @@ menu "NTP Timesync Configuration"
         default 86400
         help
             Interval between NTP syncs, in seconds. Default is 86400 for once a day.
+    config TIMESYNC_TIMEOUT
+            int "NTP Timesync Timeout"
+            default 10
+            help
+                The longest that an NTP sync can take before timing out. Default is 10 seconds.
+    config TIMESYNC_ERROR_RETRY_COOLDOWN
+            int "NTP Timesync Retry Cooldown"
+            default 10
+            help
+                Interval before retrying to sync with NTP, in seconds, after a failed attempt. Default is 10.
 endmenu
 
 menu "MQTT Configuration"
@@ -51,6 +61,11 @@ endmenu
 
 menu "I/O and Hardware Configuration"
     menu "DS18B20 Temperature Sensor"
+        config SOFTWARE_DS18B20_READOUT_INTERVAL
+                int "Sensor readout interval"
+                default 10
+                help
+                    Interval between sensor polls, in seconds. Default is once every 10 seconds.
         config HARDWARE_DS18B20_GPIO_PIN
             int "Sensor GPIO pin"
             default 17

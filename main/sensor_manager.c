@@ -102,6 +102,6 @@ void sensor_manager(void *pvParameters) {
 
     send_full_readout_to_queue(full_readout);
 
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    vTaskDelay(pdMS_TO_TICKS(CONFIG_SOFTWARE_DS18B20_READOUT_INTERVAL * 1000UL));
   }
 }
