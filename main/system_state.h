@@ -10,6 +10,7 @@
 #ifndef _SYSTEM_STATE_H
 #define _SYSTEM_STATE_H
 
+#include "ds18b20.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "time.h"
@@ -20,8 +21,16 @@
 #define SYS_BIT_MQTT_CONNECTED (1 << 3)
 
 typedef struct {
+  ds18b20_device_handle_t handle;
+  uint64_t address;
+} SensorWithAddress;
+
+static SensorWithAddress sensors[CONFIG_HARDWARE_DS18B20_MAX_SENSORS];
+
+typedef struct {
   time_t timestamp;
   float value;
+  uint64_t address;
 } SingleReadout;
 
 typedef SingleReadout ReadoutArray[CONFIG_HARDWARE_DS18B20_MAX_SENSORS];
