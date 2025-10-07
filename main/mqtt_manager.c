@@ -110,6 +110,12 @@ static void mqtt_publish_readout(const FullReadout full_readout) {
                             (double)full_readout.readouts[i].timestamp);
     cJSON_AddNumberToObject(obj, "value", full_readout.readouts[i].value);
 
+    char address_str[19]; // "0x" + 16 hex chars + null
+    snprintf(address_str, sizeof(address_str), "0x%016llX",
+             full_readout.readouts[i].address);
+
+    cJSON_AddStringToObject(obj, "address", address_str);
+
     cJSON_AddItemToArray(json_array, obj); // array takes ownership
   }
 
