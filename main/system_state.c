@@ -40,8 +40,8 @@ void readout_queue_init(void) {
  * @param ticks_to_wait Maximum number of ticks to wait if the queue is full.
  * @return pdPASS if the value was successfully enqueued, pdFAIL otherwise.
  */
-BaseType_t readout_queue_send(FullReadout full_readout,
-                              TickType_t ticks_to_wait) {
+BaseType_t readout_queue_send(const FullReadout full_readout,
+                              const TickType_t ticks_to_wait) {
   if (readout_queue == NULL)
     return pdFAIL;
   return xQueueSend(readout_queue, &full_readout, ticks_to_wait);
@@ -59,7 +59,7 @@ BaseType_t readout_queue_send(FullReadout full_readout,
  * @return pdPASS if a value was successfully received, pdFAIL otherwise.
  */
 BaseType_t readout_queue_receive(FullReadout *full_readout,
-                                 TickType_t ticks_to_wait) {
+                                 const TickType_t ticks_to_wait) {
   if (readout_queue == NULL || full_readout == NULL)
     return pdFAIL;
   return xQueueReceive(readout_queue, full_readout, ticks_to_wait);
@@ -72,20 +72,21 @@ void system_state_init(void) {
   }
 }
 
-void system_set_bits(EventBits_t bits) {
+void system_set_bits(const EventBits_t bits) {
   if (s_event_group) {
     xEventGroupSetBits(s_event_group, bits);
   }
 }
 
-void system_clear_bits(EventBits_t bits) {
+void system_clear_bits(const EventBits_t bits) {
   if (s_event_group) {
     xEventGroupClearBits(s_event_group, bits);
   }
 }
 
-EventBits_t system_wait_for_bits(EventBits_t bits, BaseType_t wait_for_all,
-                                 TickType_t ticks_to_wait) {
+EventBits_t system_wait_for_bits(const EventBits_t bits,
+                                 const BaseType_t wait_for_all,
+                                 const TickType_t ticks_to_wait) {
   if (!s_event_group)
     return 0;
   return xEventGroupWaitBits(s_event_group, bits, pdFALSE, wait_for_all,
