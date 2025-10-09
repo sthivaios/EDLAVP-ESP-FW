@@ -48,8 +48,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
     break;
 
   case MQTT_EVENT_PUBLISHED:
-    // ESP_LOGI(TAG, "Published a message to an MQTT topic: msg_id=%d",
-    //          event->msg_id);
+    ESP_LOGI(TAG, "Published a message to an MQTT topic: msg_id=%d",
+             event->msg_id);
     break;
 
   case MQTT_EVENT_DATA:
