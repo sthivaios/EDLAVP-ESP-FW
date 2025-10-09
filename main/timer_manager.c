@@ -1,6 +1,10 @@
 #include "timer_manager.h"
+
+#include "esp_log.h"
 #include "esp_timer.h"
 #include "system_state.h"
+
+static const char *TAG = "timer_manager";
 
 static void sensor_timer_callback(void *arg) {
   system_set_bits(SYS_BIT_SENSOR_READ_REQUESTED);
@@ -18,8 +22,10 @@ void setup_readout_timer(void) {
   // create the timer
   esp_timer_handle_t timer;
   ESP_ERROR_CHECK(esp_timer_create(&timer_args, &timer));
+  ESP_LOGI(TAG, "Created the readout timer successfully");
 
   // start timer
   ESP_ERROR_CHECK(
-      esp_timer_start_periodic(timer, 10000000)); // 10 seconds in microseconds
+      esp_timer_start_periodic(timer, CONFIG_SOFTWARE_DS18B20_READOUT_INTERVAL * 1000000ULL)); // microseconds
+  ESP_LOGI(TAG, "Started the readout timer successfully");
 }
