@@ -135,8 +135,6 @@ static void mqtt_publish_readout(const FullReadout full_readout) {
   if (msg_id == -1) {
     ESP_LOGE(TAG, "Failed to publish MQTT message after %d attempts",
              retry_counter);
-  } else {
-    ESP_LOGI(TAG, "Successfully published message (msg_id=%d)", msg_id);
   }
 
   free(json_string);

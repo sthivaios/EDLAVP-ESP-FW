@@ -85,7 +85,7 @@ void sensor_manager(void *pvParameters) {
       // get the time
       time_t now;
       time(&now);
-      ESP_LOGI(TAG, "Temperature read from DS18B20[%d]: %f", i, temperature);
+      ESP_LOGI(TAG, "READOUT QUEUED -> DS18B20[%d]: %.2f", i, temperature);
 
       const SingleReadout readout = {.timestamp = now,
                                      .value = temperature,
