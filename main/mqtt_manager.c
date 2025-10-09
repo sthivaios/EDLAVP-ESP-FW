@@ -135,6 +135,7 @@ void mqtt_manager(void *pvParameters) {
 
   mqtt_app_start();
 
+  // ReSharper disable once CppDFAEndlessLoop
   while (1) {
     FullReadout full_readout;
 
