@@ -24,7 +24,7 @@ static int retry_count = 0;
 
 // Returns a "human-readable" error string for different Wi-Fi error
 // codes/reasons.
-static const char *get_disconnect_reason_string(uint8_t reason) {
+static const char *get_disconnect_reason_string(const uint8_t reason) {
   switch (reason) {
   case WIFI_REASON_UNSPECIFIED:
     return "Unspecified";
@@ -96,25 +96,24 @@ static const char *get_disconnect_reason_string(uint8_t reason) {
  * logs stuff or sets event group bits to trigger other actions in other RTOS
  * tasks */
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,
-                               int32_t event_id, void *event_data) {
+                               const int32_t event_id, void *event_data) {
   if (event_id == WIFI_EVENT_STA_START) {
     ESP_LOGI(TAG, "WiFi started, trying to connect...");
-    // call function to start connecting to wifi
+    // call function to start connecting to Wi-Fi
     esp_wifi_connect();
   } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
-    // set wifi connected bit
+    // set Wi-Fi connected bit
     system_set_bits(SYS_BIT_WIFI_CONNECTED);
     // reset the retry counter
     retry_count = 0;
     ESP_LOGI(TAG, "Connected to WiFi");
   } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
-    // clear wifi connected and got-ip bit
+    // clear Wi-Fi connected and got-ip bit
     system_clear_bits(SYS_BIT_WIFI_CONNECTED);
     system_clear_bits(SYS_BIT_GOT_IP);
 
     // grab the disconnection reason
-    wifi_event_sta_disconnected_t *disconnected =
-        (wifi_event_sta_disconnected_t *)event_data;
+    wifi_event_sta_disconnected_t *disconnected = event_data;
 
     ESP_LOGE(TAG, "WiFi disconnected! Reason: %s",
              get_disconnect_reason_string(disconnected->reason));
@@ -137,22 +136,22 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
 
 // Handles IP-related events. For now only the "got ip" event.
 static void ip_event_handler(void *arg, esp_event_base_t event_base,
-                             int32_t event_id, void *event_data) {
+                             const int32_t event_id, void *event_data) {
   if (event_id == IP_EVENT_STA_GOT_IP) {
     // set the got-ip bit
     system_set_bits(SYS_BIT_GOT_IP);
 
     // grab the ip
-    ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
+    ip_event_got_ip_t *event = event_data;
 
     // log it
     ESP_LOGI(TAG, "Got IP address: " IPSTR, IP2STR(&event->ip_info.ip));
   }
 }
 
-// Main function to connect to wifi
+// Main function to connect to Wi-Fi
 void wifi_connect(void) {
-  esp_log_level_set("wifi", ESP_LOG_WARN); // make the wifi component shut up
+  esp_log_level_set("wifi", ESP_LOG_WARN); // make the Wi-Fi component shut up
   ESP_LOGI(TAG, "Setting up WiFi...");
 
   // initialize networking
@@ -160,7 +159,7 @@ void wifi_connect(void) {
   esp_event_loop_create_default();
   esp_netif_create_default_wifi_sta();
 
-  // initialize wifi
+  // initialize Wi-Fi
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
@@ -170,7 +169,7 @@ void wifi_connect(void) {
   ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP,
                                              &ip_event_handler, NULL));
 
-  // define the wifi config
+  // define the Wi-Fi config
   wifi_config_t wifi_config = {
       .sta =
           {
@@ -179,7 +178,7 @@ void wifi_connect(void) {
           },
   };
 
-  // configure wifi and start
+  // configure Wi-Fi and start
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
   ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
   ESP_ERROR_CHECK(esp_wifi_start());
