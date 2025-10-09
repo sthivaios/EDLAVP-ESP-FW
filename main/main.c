@@ -15,6 +15,7 @@
 #include "nvs_flash.h"
 #include "sensor_manager.h"
 #include "system_state.h"
+#include "timer_manager.h"
 #include "wifi_manager.h"
 
 #include <time.h>
@@ -52,4 +53,6 @@ void app_main(void) {
   TaskHandle_t mqtt_manager_handle;
   xTaskCreate(mqtt_manager, "mqtt_manager", MQTT_MANAGER_TASK_STACK_SIZE, NULL,
               1, &mqtt_manager_handle);
+
+  setup_readout_timer();
 }
