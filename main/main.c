@@ -54,5 +54,6 @@ void app_main(void) {
   xTaskCreate(mqtt_manager, "mqtt_manager", MQTT_MANAGER_TASK_STACK_SIZE, NULL,
               1, &mqtt_manager_handle);
 
+  // setup and start the readout timer
   setup_readout_timer();
 }
