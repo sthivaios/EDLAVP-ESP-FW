@@ -48,8 +48,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base,
     break;
 
   case MQTT_EVENT_PUBLISHED:
-    ESP_LOGI(TAG, "Published a message to an MQTT topic: msg_id=%d",
-             event->msg_id);
+    // ESP_LOGI(TAG, "Published a message to an MQTT topic: msg_id=%d",
+    //          event->msg_id);
     break;
 
   case MQTT_EVENT_DATA:
@@ -152,7 +152,17 @@ void mqtt_manager(void *pvParameters) {
     system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
     FullReadout full_readout;
 
-    readout_queue_receive(&full_readout, portMAX_DELAY);
-    mqtt_publish_readout(full_readout);
+    while (readout_queue_receive(&full_readout, 0) == pdPASS) {
+      if (system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, 0) == 0) {
+        ESP_LOGW(TAG, "Lost MQTT connection while processing queue");
+        break;
+      }
+
+      mqtt_publish_readout(full_readout);
+
+      // small delay between publishes to avoid overwhelming the broker
+      vTaskDelay(pdMS_TO_TICKS(50));
+    }
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
