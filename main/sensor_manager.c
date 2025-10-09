@@ -75,12 +75,12 @@ void sensor_manager(void *pvParameters) {
            ds18b20_device_num);
 
   while (1) {
+    system_wait_for_bits(SYS_BIT_NTP_SYNCED, pdTRUE, portMAX_DELAY);
     ReadoutArray all_readouts;
     int readout_count = 0;
     float temperature;
     ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
     for (int i = 0; i < ds18b20_device_num; i++) {
-      system_wait_for_bits(SYS_BIT_NTP_SYNCED, pdTRUE, portMAX_DELAY);
       ESP_ERROR_CHECK(ds18b20_get_temperature(sensors[i].handle, &temperature));
       // get the time
       time_t now;
