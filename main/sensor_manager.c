@@ -75,6 +75,8 @@ void sensor_manager(void *pvParameters) {
            ds18b20_device_num);
 
   while (1) {
+    system_wait_for_bits(SYS_BIT_SENSOR_READ_REQUESTED, pdTRUE, portMAX_DELAY);
+
     system_wait_for_bits(SYS_BIT_NTP_SYNCED, pdTRUE, portMAX_DELAY);
     ReadoutArray all_readouts;
     int readout_count = 0;
@@ -102,7 +104,6 @@ void sensor_manager(void *pvParameters) {
 
     send_full_readout_to_queue(full_readout);
 
-    vTaskDelay(
-        pdMS_TO_TICKS(CONFIG_SOFTWARE_DS18B20_READOUT_INTERVAL * 1000UL));
+    system_clear_bits(SYS_BIT_SENSOR_READ_REQUESTED);
   }
 }
