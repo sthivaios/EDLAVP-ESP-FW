@@ -78,11 +78,6 @@ menu "I/O and Hardware Configuration"
                 The amount of readouts the readout queue can hold (to be published) before overflowing.
         menu "Support for multiple sensors on a single OneWire bus (EXPERIMENTAL)"
             config HARDWARE_DS18B20_MAX_SENSORS
-                bool "Enable support for multiple sensors"
-                default n
-                help
-                    Enable support for multiple sensors on a single OneWire bus/GPIO pin. This is still very experimental.
-            config HARDWARE_DS18B20_MAX_SENSORS
                 int "Max number of DS18B20 sensors"
                 default 1
                 help
