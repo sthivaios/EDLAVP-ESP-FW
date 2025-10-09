@@ -122,10 +122,22 @@ static void mqtt_publish_readout(const FullReadout full_readout) {
   char *json_string = cJSON_PrintUnformatted(json_array);
   cJSON_Delete(json_array);
 
-  const int msg_id =
-      esp_mqtt_client_publish(mqtt_client, CONFIG_MQTT_SENSOR_READOUT_TOPIC,
-                              json_string, (int)strlen(json_string), 0, 0);
-  ESP_LOGI(TAG, "sent publish successfully, msg_id=%d", msg_id);
+  int msg_id;
+  int retry_counter = 0;
+
+  do {
+    msg_id =
+        esp_mqtt_client_publish(mqtt_client, CONFIG_MQTT_SENSOR_READOUT_TOPIC,
+                                json_string, (int)strlen(json_string), 1, 0);
+    retry_counter++;
+  } while (msg_id == -1 && retry_counter < 3);
+
+  if (msg_id == -1) {
+    ESP_LOGE(TAG, "Failed to publish MQTT message after %d attempts",
+             retry_counter);
+  } else {
+    ESP_LOGI(TAG, "Successfully published message (msg_id=%d)", msg_id);
+  }
 
   free(json_string);
 }
@@ -137,6 +149,7 @@ void mqtt_manager(void *pvParameters) {
 
   // ReSharper disable once CppDFAEndlessLoop
   while (1) {
+    system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
     FullReadout full_readout;
 
     readout_queue_receive(&full_readout, portMAX_DELAY);
