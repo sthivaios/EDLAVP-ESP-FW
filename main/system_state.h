@@ -19,6 +19,7 @@
 #define SYS_BIT_GOT_IP (1 << 1)
 #define SYS_BIT_NTP_SYNCED (1 << 2)
 #define SYS_BIT_MQTT_CONNECTED (1 << 3)
+#define SYS_BIT_SENSOR_READ_REQUESTED (1 << 4)
 
 typedef struct {
   ds18b20_device_handle_t handle;
