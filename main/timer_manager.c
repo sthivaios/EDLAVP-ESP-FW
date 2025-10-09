@@ -26,6 +26,7 @@ void setup_readout_timer(void) {
 
   // start timer
   ESP_ERROR_CHECK(
-      esp_timer_start_periodic(timer, CONFIG_SOFTWARE_DS18B20_READOUT_INTERVAL * 1000000ULL)); // microseconds
+      esp_timer_start_periodic(timer, CONFIG_SOFTWARE_DS18B20_READOUT_INTERVAL *
+                                          1000000ULL)); // microseconds
   ESP_LOGI(TAG, "Started the readout timer successfully");
 }
