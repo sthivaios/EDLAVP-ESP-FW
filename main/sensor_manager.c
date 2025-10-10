@@ -28,8 +28,6 @@ static void send_full_readout_to_queue(const FullReadout full_readout) {
 }
 
 void sensor_manager(void *pvParameters) {
-  system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
-
   ESP_LOGI(TAG, "%s task started", TAG);
 
   // install 1-wire bus
