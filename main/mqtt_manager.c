@@ -131,6 +131,11 @@ static void mqtt_publish_readout(const FullReadout full_readout) {
   char *json_string = cJSON_PrintUnformatted(json_array);
   cJSON_Delete(json_array);
 
+  if (json_string == NULL) {
+    ESP_LOGE(TAG, "Failed to build JSON string (OOM)");
+    return;
+  }
+
   int msg_id;
   int retry_counter = 0;
 
