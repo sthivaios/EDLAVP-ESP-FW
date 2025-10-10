@@ -41,24 +41,25 @@ void app_main(void) {
 
   // start the ntp_manager task
   TaskHandle_t ntp_manager_handle;
-  if (xTaskCreate(ntp_manager, "ntp_manager", NTP_MANAGER_TASK_STACK_SIZE, NULL, 3,
-              &ntp_manager_handle) != pdPASS) {
+  if (xTaskCreate(ntp_manager, "ntp_manager", NTP_MANAGER_TASK_STACK_SIZE, NULL,
+                  3, &ntp_manager_handle) != pdPASS) {
     ESP_LOGE(TAG, "FATAL: Failed to create the ntp_manager task!");
     abort();
   };
 
   // start the sensor_manager task
   TaskHandle_t sensor_manager_handle;
-  if (xTaskCreate(sensor_manager, "sensor_manager", SENSOR_MANAGER_TASK_STACK_SIZE,
-              NULL, 2, &sensor_manager_handle) != pdPASS) {
+  if (xTaskCreate(sensor_manager, "sensor_manager",
+                  SENSOR_MANAGER_TASK_STACK_SIZE, NULL, 2,
+                  &sensor_manager_handle) != pdPASS) {
     ESP_LOGE(TAG, "FATAL: Failed to create the sensor_manager task!");
     abort();
   }
 
   // start the mqtt_manager task
   TaskHandle_t mqtt_manager_handle;
-  if (xTaskCreate(mqtt_manager, "mqtt_manager", MQTT_MANAGER_TASK_STACK_SIZE, NULL,
-              1, &mqtt_manager_handle) != pdPASS) {
+  if (xTaskCreate(mqtt_manager, "mqtt_manager", MQTT_MANAGER_TASK_STACK_SIZE,
+                  NULL, 1, &mqtt_manager_handle) != pdPASS) {
     ESP_LOGE(TAG, "FATAL: Failed to create the mqtt_manager task!");
     abort();
   };
