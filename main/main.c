@@ -66,4 +66,16 @@ void app_main(void) {
 
   // setup and start the readout timer
   setup_readout_timer();
+
+  // ReSharper disable once CppDFAEndlessLoop
+  while (1) {
+    const size_t total_heap = heap_caps_get_total_size(MALLOC_CAP_DEFAULT);
+    const size_t free_heap = heap_caps_get_free_size(MALLOC_CAP_DEFAULT);
+    const size_t used_heap = total_heap - free_heap;
+
+    const float percentage_used = (float)used_heap / (float)total_heap * 100.0f;
+
+    ESP_LOGW(TAG, "HEAP USAGE: (%d/%d) -> %.2f%c", used_heap, total_heap, percentage_used, '%');
+    vTaskDelay(pdMS_TO_TICKS(500));
+  }
 }
