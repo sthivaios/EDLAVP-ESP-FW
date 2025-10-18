@@ -75,7 +75,8 @@ void app_main(void) {
 
     const float percentage_used = (float)used_heap / (float)total_heap * 100.0f;
 
-    ESP_LOGW(TAG, "HEAP USAGE: (%d/%d) -> %.2f%c", used_heap, total_heap, percentage_used, '%');
+    ESP_LOGW(TAG, "HEAP USAGE: (%d/%d) -> %.2f%c", used_heap, total_heap,
+             percentage_used, '%');
     vTaskDelay(pdMS_TO_TICKS(500));
   }
 }
