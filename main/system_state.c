@@ -26,7 +26,8 @@ void readout_queue_init(void) {
   readout_queue = xQueueCreate(CONFIG_SOFTWARE_DS18B20_READOUT_QUEUE_SIZE,
                                sizeof(FullReadout));
   if (readout_queue == NULL) {
-    ESP_LOGE(TAG, "Queue creation failed!");
+    ESP_LOGE(TAG, "FATAL: Queue creation failed!");
+    abort();
   }
 }
 
