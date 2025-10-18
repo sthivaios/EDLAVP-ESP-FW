@@ -106,7 +106,6 @@ void mqtt_app_start(void) {
 }
 
 static void mqtt_publish_readout(const FullReadout full_readout) {
-
   system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
 
   cJSON *json_array = cJSON_CreateArray();
@@ -115,8 +114,6 @@ static void mqtt_publish_readout(const FullReadout full_readout) {
     if (!obj)
       continue;
 
-    cJSON_AddNumberToObject(obj, "timestamp",
-                            (double)full_readout.readouts[i].timestamp);
     cJSON_AddNumberToObject(obj, "value", full_readout.readouts[i].value);
 
     char address_str[19]; // "0x" + 16 hex chars + null
@@ -128,8 +125,23 @@ static void mqtt_publish_readout(const FullReadout full_readout) {
     cJSON_AddItemToArray(json_array, obj); // array takes ownership
   }
 
-  char *json_string = cJSON_PrintUnformatted(json_array);
-  cJSON_Delete(json_array);
+  cJSON *metadata = cJSON_CreateObject();
+  if (!metadata) {
+    ESP_LOGE(TAG, "Failed to build JSON string (OOM)");
+    return;
+  }
+  cJSON_AddNumberToObject(metadata, "timestamp", full_readout.timestamp);
+
+  cJSON *full_json = cJSON_CreateObject();
+  if (!full_json) {
+    ESP_LOGE(TAG, "Failed to create JSON object");
+    return;
+  }
+  cJSON_AddItemToObject(full_json, "metadata", metadata);
+  cJSON_AddItemToObject(full_json, "readouts", json_array);
+
+  char *json_string = cJSON_PrintUnformatted(full_json);
+  cJSON_Delete(full_json);
 
   if (json_string == NULL) {
     ESP_LOGE(TAG, "Failed to build JSON string (OOM)");
