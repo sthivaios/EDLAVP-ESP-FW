@@ -27,7 +27,6 @@ typedef struct {
 } SensorWithAddress;
 
 typedef struct {
-  time_t timestamp;
   float value;
   uint64_t address;
 } SingleReadout;
@@ -37,6 +36,7 @@ typedef SingleReadout ReadoutArray[CONFIG_HARDWARE_DS18B20_MAX_SENSORS];
 typedef struct {
   ReadoutArray readouts;
   int readout_array_size;
+  time_t timestamp;
 } FullReadout;
 
 // should be called early in app_main()
