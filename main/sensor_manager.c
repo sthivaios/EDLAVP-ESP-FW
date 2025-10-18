@@ -88,16 +88,16 @@ void sensor_manager(void *pvParameters) {
     ReadoutArray all_readouts;
     int readout_count = 0;
     float temperature;
+
+    time_t now;
+    time(&now);
+
     ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
     for (int i = 0; i < ds18b20_device_num; i++) {
       ESP_ERROR_CHECK(ds18b20_get_temperature(sensors[i].handle, &temperature));
-      // get the time
-      time_t now;
-      time(&now);
       ESP_LOGI(TAG, "READOUT QUEUED -> DS18B20[%d]: %.2f", i, temperature);
 
-      const SingleReadout readout = {.timestamp = now,
-                                     .value = temperature,
+      const SingleReadout readout = {.value = temperature,
                                      .address = sensors[i].address};
 
       all_readouts[readout_count++] = readout;
@@ -105,9 +105,9 @@ void sensor_manager(void *pvParameters) {
 
     FullReadout full_readout = {0};
     full_readout.readout_array_size = readout_count;
-    // TODO: Fix this
     memcpy(full_readout.readouts, all_readouts,
            readout_count * sizeof(SingleReadout));
+    full_readout.timestamp = now;
 
     send_full_readout_to_queue(full_readout);
 
