@@ -7,6 +7,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+#include "device_id.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -33,7 +34,9 @@ void app_main(void) {
   setenv("TZ", "UTC", 1);
   tzset();
 
-  // initialize event group bits
+  // initialize the device id
+  device_id_init();
+
   system_state_init();
 
   // attempt to start wifi stuff
