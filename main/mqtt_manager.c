@@ -10,6 +10,7 @@
 #include "mqtt_manager.h"
 
 #include "cJSON.h"
+#include "device_id.h"
 #include "esp_netif.h"
 #include <inttypes.h>
 #include <string.h>
@@ -131,6 +132,7 @@ static void mqtt_publish_readout(const FullReadout full_readout) {
     return;
   }
   cJSON_AddNumberToObject(metadata, "timestamp", full_readout.timestamp);
+  cJSON_AddStringToObject(metadata, "device", get_device_id());
 
   cJSON *full_json = cJSON_CreateObject();
   if (!full_json) {
