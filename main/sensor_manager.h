@@ -17,11 +17,6 @@ typedef struct {
   uint64_t address;
 } DS18B20Sensor;
 
-typedef struct {
-  float value;
-  time_t timestamp;
-} DS18B20SingleReadout;
-
 #define SENSOR_MANAGER_TASK_STACK_SIZE 8192
 #define ONEWIRE_MAX_RX_BYTES                                                   \
   10 // 1byte ROM command + 8byte ROM number + 1byte device command
