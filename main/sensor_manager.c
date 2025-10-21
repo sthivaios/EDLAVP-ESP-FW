@@ -16,12 +16,13 @@
 #include "onewire_device.h"
 #include "system_state.h"
 #include "time.h"
+#include "types.h"
 
 static const char *TAG = "sensor_manager";
 
 static DS18B20Sensor sensor;
 
-static void send_full_readout_to_queue(const DS18B20SingleReadout readout) {
+static void send_full_readout_to_queue(const UniversalSingleReadout readout) {
   if (readout_queue_send(readout, pdMS_TO_TICKS(100)) != pdPASS) {
     ESP_LOGW(TAG, "Queue full, dropping readout!");
   }
@@ -89,8 +90,10 @@ void sensor_manager(void *pvParameters) {
     ESP_ERROR_CHECK(ds18b20_get_temperature(sensor.handle, &temperature));
     ESP_LOGI(TAG, "READOUT QUEUED -> DS18B20: %.2f", temperature);
 
-    const DS18B20SingleReadout readout = {.value = temperature,
-                                          .timestamp = now};
+    const UniversalSingleReadout readout = {.value = temperature,
+                                            .timestamp = now,
+                                            .sensor_type = "ds18b20",
+                                            .unit = "C"};
 
     send_full_readout_to_queue(readout);
 
