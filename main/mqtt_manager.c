@@ -106,7 +106,7 @@ void mqtt_app_start(void) {
   ESP_ERROR_CHECK(esp_mqtt_client_start(mqtt_client));
 }
 
-static void mqtt_publish_readout(const DS18B20SingleReadout readout) {
+static void mqtt_publish_readout(const UniversalSingleReadout readout) {
   system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
 
   cJSON *readout_obj = cJSON_CreateObject();
@@ -114,6 +114,8 @@ static void mqtt_publish_readout(const DS18B20SingleReadout readout) {
     return;
 
   cJSON_AddNumberToObject(readout_obj, "value", readout.value);
+  cJSON_AddStringToObject(readout_obj, "sensor", readout.sensor_type);
+  cJSON_AddStringToObject(readout_obj, "unit", readout.unit);
 
   cJSON *metadata = cJSON_CreateObject();
   if (!metadata) {
@@ -165,7 +167,7 @@ void mqtt_manager(void *pvParameters) {
   // ReSharper disable once CppDFAEndlessLoop
   while (1) {
     system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
-    DS18B20SingleReadout readout;
+    UniversalSingleReadout readout;
 
     while (readout_queue_receive(&readout, 0) == pdPASS) {
       if (system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, 0) == 0) {
