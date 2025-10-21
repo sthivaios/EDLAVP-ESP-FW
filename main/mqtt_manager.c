@@ -141,13 +141,17 @@ static void mqtt_publish_readout(const UniversalSingleReadout readout) {
     return;
   }
 
+  const char *device_id = get_device_id();
+  char topic[128]; // topic buffer
+  snprintf(topic, sizeof(topic), "edlavp/%s/sensor/%s", device_id,
+           readout.sensor_type);
+
   int msg_id;
   int retry_counter = 0;
 
   do {
-    msg_id =
-        esp_mqtt_client_publish(mqtt_client, CONFIG_MQTT_SENSOR_READOUT_TOPIC,
-                                json_string, (int)strlen(json_string), 1, 0);
+    msg_id = esp_mqtt_client_publish(mqtt_client, topic, json_string,
+                                     (int)strlen(json_string), 1, 0);
     retry_counter++;
   } while (msg_id == -1 && retry_counter < 3);
 
