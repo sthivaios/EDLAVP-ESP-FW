@@ -13,6 +13,7 @@
 #include "ds18b20.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
+#include "sensor_manager.h"
 #include "time.h"
 
 #define SYS_BIT_WIFI_CONNECTED (1 << 0)
@@ -20,24 +21,6 @@
 #define SYS_BIT_NTP_SYNCED (1 << 2)
 #define SYS_BIT_MQTT_CONNECTED (1 << 3)
 #define SYS_BIT_SENSOR_READ_REQUESTED (1 << 4)
-
-typedef struct {
-  ds18b20_device_handle_t handle;
-  uint64_t address;
-} SensorWithAddress;
-
-typedef struct {
-  float value;
-  uint64_t address;
-} SingleReadout;
-
-typedef SingleReadout ReadoutArray[CONFIG_HARDWARE_DS18B20_MAX_SENSORS];
-
-typedef struct {
-  ReadoutArray readouts;
-  int readout_array_size;
-  time_t timestamp;
-} FullReadout;
 
 // should be called early in app_main()
 void system_state_init(void);
@@ -52,9 +35,9 @@ EventBits_t system_wait_for_bits(EventBits_t bits, BaseType_t wait_for_all,
 // sensor readout queue wrappers
 
 void readout_queue_init(void);
-BaseType_t readout_queue_send(FullReadout full_readout,
+BaseType_t readout_queue_send(DS18B20SingleReadout readout,
                               TickType_t ticks_to_wait);
-BaseType_t readout_queue_receive(FullReadout *full_readout,
+BaseType_t readout_queue_receive(DS18B20SingleReadout *readout,
                                  TickType_t ticks_to_wait);
 
 #endif //_SYSTEM_STATE_H

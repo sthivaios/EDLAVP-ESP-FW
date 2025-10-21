@@ -19,10 +19,10 @@
 
 static const char *TAG = "sensor_manager";
 
-static SensorWithAddress sensors[CONFIG_HARDWARE_DS18B20_MAX_SENSORS];
+static DS18B20Sensor sensor;
 
-static void send_full_readout_to_queue(const FullReadout full_readout) {
-  if (readout_queue_send(full_readout, pdMS_TO_TICKS(100)) != pdPASS) {
+static void send_full_readout_to_queue(const DS18B20SingleReadout readout) {
+  if (readout_queue_send(readout, pdMS_TO_TICKS(100)) != pdPASS) {
     ESP_LOGW(TAG, "Queue full, dropping readout!");
   }
 }
@@ -41,7 +41,6 @@ void sensor_manager(void *pvParameters) {
   onewire_bus_rmt_config_t rmt_config = {.max_rx_bytes = ONEWIRE_MAX_RX_BYTES};
   ESP_ERROR_CHECK(onewire_new_bus_rmt(&bus_config, &rmt_config, &bus));
 
-  int ds18b20_device_num = 0;
   onewire_device_iter_handle_t iter = NULL;
   onewire_device_t next_onewire_device;
   esp_err_t search_result = ESP_OK;
@@ -51,20 +50,17 @@ void sensor_manager(void *pvParameters) {
   ESP_LOGI(TAG, "Device iterator created, start searching...");
   do {
     search_result = onewire_device_iter_get_next(iter, &next_onewire_device);
-    if (search_result == ESP_OK) { // found a new device, let's check if we
+    if (search_result == ESP_OK) {
+      // found a new device, let's check if we
       // can upgrade it to a DS18B20
       ds18b20_config_t ds_cfg = {};
       onewire_device_address_t address;
       // check if the device is a DS18B20, if so, return the ds18b20 handle
-      if (ds18b20_new_device_from_enumeration(
-              &next_onewire_device, &ds_cfg,
-              &sensors[ds18b20_device_num].handle) == ESP_OK) {
-        ds18b20_get_device_address(sensors[ds18b20_device_num].handle,
-                                   &address);
-        sensors[ds18b20_device_num].address = address;
-        ESP_LOGI(TAG, "Found a DS18B20[%d], address: %016llX",
-                 ds18b20_device_num, address);
-        ds18b20_device_num++;
+      if (ds18b20_new_device_from_enumeration(&next_onewire_device, &ds_cfg,
+                                              &sensor.handle) == ESP_OK) {
+        ds18b20_get_device_address(sensor.handle, &address);
+        sensor.address = address;
+        ESP_LOGI(TAG, "Found a DS18B20, address: %016llX", address);
       } else {
         ESP_LOGI(TAG, "Found an unknown device, address: %016llX",
                  next_onewire_device.address);
@@ -72,44 +68,31 @@ void sensor_manager(void *pvParameters) {
     }
   } while (search_result != ESP_ERR_NOT_FOUND);
 
-  if (ds18b20_device_num == 0) {
-    ESP_LOGE(TAG, "No sensors found! Suspending sensor_manager task.");
+  if (sensor.handle == NULL) {
+    ESP_LOGE(TAG, "No sensor found! Suspending sensor_manager task.");
     vTaskSuspend(NULL);
   }
 
   ESP_ERROR_CHECK(onewire_del_device_iter(iter));
-  ESP_LOGI(TAG, "Searching done, %d DS18B20 device(s) found",
-           ds18b20_device_num);
+  ESP_LOGI(TAG, "Searching done, DS18B20 device found");
 
   while (1) {
     system_wait_for_bits(SYS_BIT_SENSOR_READ_REQUESTED, pdTRUE, portMAX_DELAY);
 
     system_wait_for_bits(SYS_BIT_NTP_SYNCED, pdTRUE, portMAX_DELAY);
-    ReadoutArray all_readouts;
-    int readout_count = 0;
     float temperature;
 
     time_t now;
     time(&now);
 
     ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
-    for (int i = 0; i < ds18b20_device_num; i++) {
-      ESP_ERROR_CHECK(ds18b20_get_temperature(sensors[i].handle, &temperature));
-      ESP_LOGI(TAG, "READOUT QUEUED -> DS18B20[%d]: %.2f", i, temperature);
+    ESP_ERROR_CHECK(ds18b20_get_temperature(sensor.handle, &temperature));
+    ESP_LOGI(TAG, "READOUT QUEUED -> DS18B20: %.2f", temperature);
 
-      const SingleReadout readout = {.value = temperature,
-                                     .address = sensors[i].address};
+    const DS18B20SingleReadout readout = {.value = temperature,
+                                          .timestamp = now};
 
-      all_readouts[readout_count++] = readout;
-    }
-
-    FullReadout full_readout = {0};
-    full_readout.readout_array_size = readout_count;
-    memcpy(full_readout.readouts, all_readouts,
-           readout_count * sizeof(SingleReadout));
-    full_readout.timestamp = now;
-
-    send_full_readout_to_queue(full_readout);
+    send_full_readout_to_queue(readout);
 
     system_clear_bits(SYS_BIT_SENSOR_READ_REQUESTED);
   }
