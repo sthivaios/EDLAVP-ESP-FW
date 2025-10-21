@@ -106,32 +106,21 @@ void mqtt_app_start(void) {
   ESP_ERROR_CHECK(esp_mqtt_client_start(mqtt_client));
 }
 
-static void mqtt_publish_readout(const FullReadout full_readout) {
+static void mqtt_publish_readout(const DS18B20SingleReadout readout) {
   system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
 
-  cJSON *json_array = cJSON_CreateArray();
-  for (size_t i = 0; i < full_readout.readout_array_size; i++) {
-    cJSON *obj = cJSON_CreateObject();
-    if (!obj)
-      continue;
+  cJSON *readout_obj = cJSON_CreateObject();
+  if (!readout_obj)
+    return;
 
-    cJSON_AddNumberToObject(obj, "value", full_readout.readouts[i].value);
-
-    char address_str[19]; // "0x" + 16 hex chars + null
-    snprintf(address_str, sizeof(address_str), "0x%016llX",
-             full_readout.readouts[i].address);
-
-    cJSON_AddStringToObject(obj, "address", address_str);
-
-    cJSON_AddItemToArray(json_array, obj); // array takes ownership
-  }
+  cJSON_AddNumberToObject(readout_obj, "value", readout.value);
 
   cJSON *metadata = cJSON_CreateObject();
   if (!metadata) {
     ESP_LOGE(TAG, "Failed to build JSON string (OOM)");
     return;
   }
-  cJSON_AddNumberToObject(metadata, "timestamp", full_readout.timestamp);
+  cJSON_AddNumberToObject(metadata, "timestamp", readout.timestamp);
   cJSON_AddStringToObject(metadata, "device", get_device_id());
 
   cJSON *full_json = cJSON_CreateObject();
@@ -140,7 +129,7 @@ static void mqtt_publish_readout(const FullReadout full_readout) {
     return;
   }
   cJSON_AddItemToObject(full_json, "metadata", metadata);
-  cJSON_AddItemToObject(full_json, "readouts", json_array);
+  cJSON_AddItemToObject(full_json, "readout", readout_obj);
 
   char *json_string = cJSON_PrintUnformatted(full_json);
   cJSON_Delete(full_json);
@@ -176,15 +165,15 @@ void mqtt_manager(void *pvParameters) {
   // ReSharper disable once CppDFAEndlessLoop
   while (1) {
     system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, portMAX_DELAY);
-    FullReadout full_readout;
+    DS18B20SingleReadout readout;
 
-    while (readout_queue_receive(&full_readout, 0) == pdPASS) {
+    while (readout_queue_receive(&readout, 0) == pdPASS) {
       if (system_wait_for_bits(SYS_BIT_MQTT_CONNECTED, pdTRUE, 0) == 0) {
         ESP_LOGW(TAG, "Lost MQTT connection while processing queue");
         break;
       }
 
-      mqtt_publish_readout(full_readout);
+      mqtt_publish_readout(readout);
 
       // small delay between publishes to avoid overwhelming the broker
       vTaskDelay(pdMS_TO_TICKS(50));
