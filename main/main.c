@@ -44,8 +44,8 @@ void app_main(void) {
 
   // start the ntp_manager task
   TaskHandle_t ntp_manager_handle;
-  if (xTaskCreate(ntp_manager, "ntp_manager", CONFIG_NTP_MANAGER_STACK_SIZE, NULL,
-                  3, &ntp_manager_handle) != pdPASS) {
+  if (xTaskCreate(ntp_manager, "ntp_manager", CONFIG_NTP_MANAGER_STACK_SIZE,
+                  NULL, 3, &ntp_manager_handle) != pdPASS) {
     ESP_LOGE(TAG, "FATAL: Failed to create the ntp_manager task!");
     abort();
   };
