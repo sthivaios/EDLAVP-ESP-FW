@@ -1,4 +1,30 @@
 menu "EDLAVP-ESP-FW Configuration"
+    menu "FreeRTOS Configuration"
+        menu "Stack allocation"
+            config NTP_MANAGER_STACK_SIZE
+                int "ntp_manager task stack size"
+                default 4096
+                help
+                    The size of the stack allocated to the ntp_manager task
+            config SENSOR_MANAGER_DS18B20_STACK_SIZE
+                int "sensor_manager_ds18b20 task stack size"
+                default 4096
+                help
+                    The size of the stack allocated to the sensor_manager_ds18b20 task
+            config MQTT_MANAGER_STACK_SIZE
+                int "mqtt_manager task stack size"
+                default 8192
+                help
+                    The size of the stack allocated to the mqtt_manager task. Note that the mqtt_manager task does a lot of JSON and string stuff, so it should have a lot of space to work with.
+        endmenu
+        menu "Queues"
+            config READOUT_QUEUE_SIZE
+                int "Sensor readout queue size"
+                default 20
+                help
+                    The amount of readouts the readout queue can hold (to be published) before overflowing.
+        endmenu
+    endmenu
     menu "Wi-Fi Configuration"
         config WIFI_SSID
             string "Wi-Fi SSID"
@@ -53,36 +79,21 @@ menu "EDLAVP-ESP-FW Configuration"
                 default ""
                 help
                     The password to connect to the MQTT broker with.
-        config MQTT_SENSOR_READOUT_TOPIC
-                string "DS18B20 sensor readout topic"
-                default "/edlavp/ds18b20"
-                help
-                    The MQTT topic where to publish the DS18B20 sensor readouts/values.
     endmenu
 
     menu "I/O and Hardware Configuration"
-        menu "DS18B20 Temperature Sensor"
-            config SOFTWARE_DS18B20_READOUT_INTERVAL
-                    int "Sensor readout interval"
-                    default 10
+        menu "Sensors"
+            menu "DS18B20 Temperature Sensor"
+                config SOFTWARE_DS18B20_READOUT_INTERVAL
+                        int "Sensor readout interval"
+                        default 10
+                        help
+                            Interval between sensor polls, in seconds. Default is once every 10 seconds.
+                config HARDWARE_DS18B20_GPIO_PIN
+                    int "Sensor GPIO pin"
+                    default 17
                     help
-                        Interval between sensor polls, in seconds. Default is once every 10 seconds.
-            config HARDWARE_DS18B20_GPIO_PIN
-                int "Sensor GPIO pin"
-                default 17
-                help
-                    The GPIO pin that the DS18B20 sensor is connected to.
-            config SOFTWARE_DS18B20_READOUT_QUEUE_SIZE
-                int "Sensor readout queue size"
-                default 10
-                help
-                    The amount of readouts the readout queue can hold (to be published) before overflowing.
-            menu "Support for multiple sensors on a single OneWire bus (EXPERIMENTAL)"
-                config HARDWARE_DS18B20_MAX_SENSORS
-                    int "Max number of DS18B20 sensors"
-                    default 1
-                    help
-                        The maximum number of DS18B20 sensors that can be connected to the same GPIO pin/OneWire bu.
+                        The GPIO pin that the DS18B20 sensor is connected to.
             endmenu
         endmenu
     endmenu
