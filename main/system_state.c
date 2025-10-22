@@ -10,7 +10,6 @@
 #include "system_state.h"
 #include "esp_log.h"
 #include "freertos/event_groups.h"
-#include "sensor_manager.h"
 #include "types.h"
 
 static const char *TAG = "SYSTEM_STATE";
@@ -25,8 +24,8 @@ static QueueHandle_t readout_queue;
  * Must be called before any send/receive operations.
  */
 void readout_queue_init(void) {
-  readout_queue = xQueueCreate(CONFIG_SOFTWARE_DS18B20_READOUT_QUEUE_SIZE,
-                               sizeof(UniversalSingleReadout));
+  readout_queue =
+      xQueueCreate(CONFIG_READOUT_QUEUE_SIZE, sizeof(UniversalSingleReadout));
   if (readout_queue == NULL) {
     ESP_LOGE(TAG, "FATAL: Queue creation failed!");
     abort();
