@@ -17,10 +17,10 @@ typedef struct {
   uint64_t address;
 } DS18B20Sensor;
 
-#define SENSOR_MANAGER_TASK_STACK_SIZE 8192
+#define SENSOR_MANAGER_DS18B20_TASK_STACK_SIZE 4096
 #define ONEWIRE_MAX_RX_BYTES                                                   \
   10 // 1byte ROM command + 8byte ROM number + 1byte device command
 
-void sensor_manager(void *pvParameters);
+void sensor_manager_ds18b20(void *pvParameters);
 
 #endif //_SENSOR_MANAGER_H
