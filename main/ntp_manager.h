@@ -10,8 +10,6 @@
 #ifndef _NTP_MANAGER_H
 #define _NTP_MANAGER_H
 
-#define NTP_MANAGER_TASK_STACK_SIZE 2048
-
 void ntp_manager(void *pvParameters);
 
 #endif //_NTP_MANAGER_H

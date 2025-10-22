@@ -7,11 +7,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef _MQTT_MANAGER_H
-#define _MQTT_MANAGER_H
+#ifndef _TYPES_H
+#define _TYPES_H
+#include "time.h"
 
-void mqtt_app_start();
+typedef struct {
+  float value;
+  time_t timestamp;
+  const char *sensor_type;
+  const char *unit;
+} UniversalSingleReadout;
 
-void mqtt_manager(void *pvParameters);
-
-#endif //_MQTT_MANAGER_H
+#endif //_TYPES_H
