@@ -44,7 +44,7 @@ void app_main(void) {
 
   // start the ntp_manager task
   TaskHandle_t ntp_manager_handle;
-  if (xTaskCreate(ntp_manager, "ntp_manager", NTP_MANAGER_TASK_STACK_SIZE, NULL,
+  if (xTaskCreate(ntp_manager, "ntp_manager", CONFIG_NTP_MANAGER_STACK_SIZE, NULL,
                   3, &ntp_manager_handle) != pdPASS) {
     ESP_LOGE(TAG, "FATAL: Failed to create the ntp_manager task!");
     abort();
@@ -53,7 +53,7 @@ void app_main(void) {
   // start the sensor_manager_ds18b20 task
   TaskHandle_t sensor_manager_handle;
   if (xTaskCreate(sensor_manager_ds18b20, "sensor_manager_ds18b20",
-                  SENSOR_MANAGER_DS18B20_TASK_STACK_SIZE, NULL, 2,
+                  CONFIG_SENSOR_MANAGER_DS18B20_STACK_SIZE, NULL, 2,
                   &sensor_manager_handle) != pdPASS) {
     ESP_LOGE(TAG, "FATAL: Failed to create the sensor_manager_ds18b20 task!");
     abort();
@@ -61,7 +61,7 @@ void app_main(void) {
 
   // start the mqtt_manager task
   TaskHandle_t mqtt_manager_handle;
-  if (xTaskCreate(mqtt_manager, "mqtt_manager", MQTT_MANAGER_TASK_STACK_SIZE,
+  if (xTaskCreate(mqtt_manager, "mqtt_manager", CONFIG_MQTT_MANAGER_STACK_SIZE,
                   NULL, 1, &mqtt_manager_handle) != pdPASS) {
     ESP_LOGE(TAG, "FATAL: Failed to create the mqtt_manager task!");
     abort();
