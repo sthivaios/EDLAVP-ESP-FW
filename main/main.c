@@ -67,8 +67,8 @@ void app_main(void) {
     abort();
   };
 
-  // setup and start the readout timer
-  setup_readout_timer();
+  // setup and start the readout timers
+  setup_readout_timers();
 
   // ReSharper disable once CppDFAEndlessLoop
   while (1) {
