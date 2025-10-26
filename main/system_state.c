@@ -10,7 +10,7 @@
 #include "system_state.h"
 #include "esp_log.h"
 #include "freertos/event_groups.h"
-#include "sensor_manager.h"
+#include "types.h"
 
 static const char *TAG = "SYSTEM_STATE";
 static EventGroupHandle_t s_event_group = NULL;
@@ -24,8 +24,8 @@ static QueueHandle_t readout_queue;
  * Must be called before any send/receive operations.
  */
 void readout_queue_init(void) {
-  readout_queue = xQueueCreate(CONFIG_SOFTWARE_DS18B20_READOUT_QUEUE_SIZE,
-                               sizeof(DS18B20SingleReadout));
+  readout_queue =
+      xQueueCreate(CONFIG_READOUT_QUEUE_SIZE, sizeof(UniversalSingleReadout));
   if (readout_queue == NULL) {
     ESP_LOGE(TAG, "FATAL: Queue creation failed!");
     abort();
@@ -42,7 +42,7 @@ void readout_queue_init(void) {
  * @param ticks_to_wait Maximum number of ticks to wait if the queue is full.
  * @return pdPASS if the value was successfully enqueued, pdFAIL otherwise.
  */
-BaseType_t readout_queue_send(const DS18B20SingleReadout readout,
+BaseType_t readout_queue_send(const UniversalSingleReadout readout,
                               const TickType_t ticks_to_wait) {
   if (readout_queue == NULL)
     return pdFAIL;
@@ -60,7 +60,7 @@ BaseType_t readout_queue_send(const DS18B20SingleReadout readout,
  * @param ticks_to_wait Maximum number of ticks to wait if the queue is empty.
  * @return pdPASS if a value was successfully received, pdFAIL otherwise.
  */
-BaseType_t readout_queue_receive(DS18B20SingleReadout *readout,
+BaseType_t readout_queue_receive(UniversalSingleReadout *readout,
                                  const TickType_t ticks_to_wait) {
   if (readout_queue == NULL || readout == NULL)
     return pdFAIL;

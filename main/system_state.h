@@ -13,8 +13,7 @@
 #include "ds18b20.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
-#include "sensor_manager.h"
-#include "time.h"
+#include "types.h"
 
 #define SYS_BIT_WIFI_CONNECTED (1 << 0)
 #define SYS_BIT_GOT_IP (1 << 1)
@@ -35,9 +34,9 @@ EventBits_t system_wait_for_bits(EventBits_t bits, BaseType_t wait_for_all,
 // sensor readout queue wrappers
 
 void readout_queue_init(void);
-BaseType_t readout_queue_send(DS18B20SingleReadout readout,
+BaseType_t readout_queue_send(UniversalSingleReadout readout,
                               TickType_t ticks_to_wait);
-BaseType_t readout_queue_receive(DS18B20SingleReadout *readout,
+BaseType_t readout_queue_receive(UniversalSingleReadout *readout,
                                  TickType_t ticks_to_wait);
 
 #endif //_SYSTEM_STATE_H

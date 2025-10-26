@@ -7,7 +7,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include "sensor_manager.h"
+#include "sensor_manager_ds18b20.h"
 
 #include "ds18b20.h"
 #include "esp_err.h"
@@ -16,18 +16,13 @@
 #include "onewire_device.h"
 #include "system_state.h"
 #include "time.h"
+#include "types.h"
 
-static const char *TAG = "sensor_manager";
+static const char *TAG = "sensor_manager_ds18b20";
 
 static DS18B20Sensor sensor;
 
-static void send_full_readout_to_queue(const DS18B20SingleReadout readout) {
-  if (readout_queue_send(readout, pdMS_TO_TICKS(100)) != pdPASS) {
-    ESP_LOGW(TAG, "Queue full, dropping readout!");
-  }
-}
-
-void sensor_manager(void *pvParameters) {
+void sensor_manager_ds18b20(void *pvParameters) {
   ESP_LOGI(TAG, "%s task started", TAG);
 
   // install 1-wire bus
@@ -47,7 +42,7 @@ void sensor_manager(void *pvParameters) {
 
   // create 1-wire device iterator, which is used for device search
   ESP_ERROR_CHECK(onewire_new_device_iter(bus, &iter));
-  ESP_LOGI(TAG, "Device iterator created, start searching...");
+  ESP_LOGI(TAG, "Device iterator created, searching for a DS18B20...");
   do {
     search_result = onewire_device_iter_get_next(iter, &next_onewire_device);
     if (search_result == ESP_OK) {
@@ -60,21 +55,21 @@ void sensor_manager(void *pvParameters) {
                                               &sensor.handle) == ESP_OK) {
         ds18b20_get_device_address(sensor.handle, &address);
         sensor.address = address;
-        ESP_LOGI(TAG, "Found a DS18B20, address: %016llX", address);
+        ESP_LOGI(TAG, "Found a DS18B20 at address: %016llX", address);
       } else {
-        ESP_LOGI(TAG, "Found an unknown device, address: %016llX",
+        ESP_LOGW(TAG, "Found an unknown OneWire device, address: %016llX",
                  next_onewire_device.address);
       }
     }
   } while (search_result != ESP_ERR_NOT_FOUND);
 
   if (sensor.handle == NULL) {
-    ESP_LOGE(TAG, "No sensor found! Suspending sensor_manager task.");
+    ESP_LOGW(TAG, "No DS18B20 found! Suspending sensor_manager_ds18b20 task.");
     vTaskSuspend(NULL);
   }
 
   ESP_ERROR_CHECK(onewire_del_device_iter(iter));
-  ESP_LOGI(TAG, "Searching done, DS18B20 device found");
+  ESP_LOGI(TAG, "Searching done, DS18B20 sensor found");
 
   while (1) {
     system_wait_for_bits(SYS_BIT_SENSOR_READ_REQUESTED, pdTRUE, portMAX_DELAY);
@@ -87,12 +82,17 @@ void sensor_manager(void *pvParameters) {
 
     ESP_ERROR_CHECK(ds18b20_trigger_temperature_conversion_for_all(bus));
     ESP_ERROR_CHECK(ds18b20_get_temperature(sensor.handle, &temperature));
-    ESP_LOGI(TAG, "READOUT QUEUED -> DS18B20: %.2f", temperature);
 
-    const DS18B20SingleReadout readout = {.value = temperature,
-                                          .timestamp = now};
+    const UniversalSingleReadout readout = {.value = temperature,
+                                            .timestamp = now,
+                                            .sensor_type = "ds18b20",
+                                            .unit = "C"};
 
-    send_full_readout_to_queue(readout);
+    if (readout_queue_send(readout, pdMS_TO_TICKS(100)) != pdPASS) {
+      ESP_LOGW(TAG, "Queue full, dropping readout!");
+    } else {
+      ESP_LOGI(TAG, "READOUT QUEUED -> DS18B20: %.2f", temperature);
+    }
 
     system_clear_bits(SYS_BIT_SENSOR_READ_REQUESTED);
   }
