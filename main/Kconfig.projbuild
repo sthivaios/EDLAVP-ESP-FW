@@ -95,6 +95,19 @@ menu "EDLAVP-ESP-FW Configuration"
                     help
                         The GPIO pin that the DS18B20 sensor is connected to.
             endmenu
+            menu "DHT11 Humidity Sensor"
+                    comment "For temperature readouts, the DS18B20 is used instead as it is more accurate. EDLAVP only supports DHT11 for humidity."
+                    config SOFTWARE_DHT11_READOUT_INTERVAL
+                            int "Sensor readout interval"
+                            default 20
+                            help
+                                Interval between sensor polls, in seconds. Default is once every 10 seconds.
+                    config HARDWARE_DHT11_GPIO_PIN
+                        int "Sensor GPIO pin"
+                        default 18
+                        help
+                            The GPIO pin that the DHT11 sensor is connected to.
+                endmenu
         endmenu
     endmenu
 endmenu
