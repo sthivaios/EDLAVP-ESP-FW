@@ -72,7 +72,7 @@ void sensor_manager_ds18b20(void *pvParameters) {
   ESP_LOGI(TAG, "Searching done, DS18B20 sensor found");
 
   while (1) {
-    system_wait_for_bits(SYS_BIT_SENSOR_READ_REQUESTED, pdTRUE, portMAX_DELAY);
+    system_wait_for_bits(SYS_BIT_DS18B20_READ_REQUESTED, pdTRUE, portMAX_DELAY);
 
     system_wait_for_bits(SYS_BIT_NTP_SYNCED, pdTRUE, portMAX_DELAY);
     float temperature;
@@ -94,6 +94,6 @@ void sensor_manager_ds18b20(void *pvParameters) {
       ESP_LOGI(TAG, "READOUT QUEUED -> DS18B20: %.2f", temperature);
     }
 
-    system_clear_bits(SYS_BIT_SENSOR_READ_REQUESTED);
+    system_clear_bits(SYS_BIT_DS18B20_READ_REQUESTED);
   }
 }
