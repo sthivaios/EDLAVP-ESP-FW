@@ -7,8 +7,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#ifndef _SENSOR_MANAGER_H
-#define _SENSOR_MANAGER_H
+#ifndef _SENSOR_MANAGER_DS18B20_H
+#define _SENSOR_MANAGER_DS18B20_H
 #include "ds18b20.h"
 #include "time.h"
 
@@ -22,4 +22,4 @@ typedef struct {
 
 void sensor_manager_ds18b20(void *pvParameters);
 
-#endif //_SENSOR_MANAGER_H
+#endif //_SENSOR_MANAGER_DS18B20_H
