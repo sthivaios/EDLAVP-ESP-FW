@@ -11,6 +11,11 @@ menu "EDLAVP-ESP-FW Configuration"
                 default 4096
                 help
                     The size of the stack allocated to the sensor_manager_ds18b20 task
+            config SENSOR_MANAGER_DS18B20_STACK_SIZE
+                int "sensor_manager_dht11 task stack size"
+                default 4096
+                help
+                    The size of the stack allocated to the sensor_manager_dht11 task
             config MQTT_MANAGER_STACK_SIZE
                 int "mqtt_manager task stack size"
                 default 8192
@@ -107,6 +112,11 @@ menu "EDLAVP-ESP-FW Configuration"
                         default 18
                         help
                             The GPIO pin that the DHT11 sensor is connected to.
+                    config HARDWARE_DHT11_INTERNAL_PULLUP
+                        bool "DHT11 internal pullup"
+                        default y
+                        help
+                            Enable or disable the internal DHT11 pullup resistor.
                 endmenu
         endmenu
     endmenu

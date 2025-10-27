@@ -14,6 +14,7 @@
 #include "mqtt_manager.h"
 #include "ntp_manager.h"
 #include "nvs_flash.h"
+#include "sensor_manager_dht11.h"
 #include "sensor_manager_ds18b20.h"
 #include "system_state.h"
 #include "timer_manager.h"
@@ -51,11 +52,20 @@ void app_main(void) {
   };
 
   // start the sensor_manager_ds18b20 task
-  TaskHandle_t sensor_manager_handle;
+  TaskHandle_t sensor_manager_dsb18b20_handle;
   if (xTaskCreate(sensor_manager_ds18b20, "sensor_manager_ds18b20",
                   CONFIG_SENSOR_MANAGER_DS18B20_STACK_SIZE, NULL, 2,
-                  &sensor_manager_handle) != pdPASS) {
+                  &sensor_manager_dsb18b20_handle) != pdPASS) {
     ESP_LOGE(TAG, "FATAL: Failed to create the sensor_manager_ds18b20 task!");
+    abort();
+  }
+
+  // start the sensor_manager_dht11 task
+  TaskHandle_t sensor_manager_dht11_handle;
+  if (xTaskCreate(sensor_manager_dht11, "sensor_manager_dht11",
+                  CONFIG_SENSOR_MANAGER_DS18B20_STACK_SIZE, NULL, 2,
+                  &sensor_manager_dht11_handle) != pdPASS) {
+    ESP_LOGE(TAG, "FATAL: Failed to create the sensor_manager_dht11 task!");
     abort();
   }
 
