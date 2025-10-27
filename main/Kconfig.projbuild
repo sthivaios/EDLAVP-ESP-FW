@@ -11,6 +11,11 @@ menu "EDLAVP-ESP-FW Configuration"
                 default 4096
                 help
                     The size of the stack allocated to the sensor_manager_ds18b20 task
+            config SENSOR_MANAGER_DS18B20_STACK_SIZE
+                int "sensor_manager_dht11 task stack size"
+                default 4096
+                help
+                    The size of the stack allocated to the sensor_manager_dht11 task
             config MQTT_MANAGER_STACK_SIZE
                 int "mqtt_manager task stack size"
                 default 8192
@@ -95,6 +100,24 @@ menu "EDLAVP-ESP-FW Configuration"
                     help
                         The GPIO pin that the DS18B20 sensor is connected to.
             endmenu
+            menu "DHT11 Humidity Sensor"
+                    comment "For temperature readouts, the DS18B20 is used instead as it is more accurate. EDLAVP only supports DHT11 for humidity."
+                    config SOFTWARE_DHT11_READOUT_INTERVAL
+                            int "Sensor readout interval"
+                            default 20
+                            help
+                                Interval between sensor polls, in seconds. Default is once every 10 seconds.
+                    config HARDWARE_DHT11_GPIO_PIN
+                        int "Sensor GPIO pin"
+                        default 18
+                        help
+                            The GPIO pin that the DHT11 sensor is connected to.
+                    config HARDWARE_DHT11_INTERNAL_PULLUP
+                        bool "DHT11 internal pullup"
+                        default y
+                        help
+                            Enable or disable the internal DHT11 pullup resistor.
+                endmenu
         endmenu
     endmenu
 endmenu

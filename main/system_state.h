@@ -19,7 +19,8 @@
 #define SYS_BIT_GOT_IP (1 << 1)
 #define SYS_BIT_NTP_SYNCED (1 << 2)
 #define SYS_BIT_MQTT_CONNECTED (1 << 3)
-#define SYS_BIT_SENSOR_READ_REQUESTED (1 << 4)
+#define SYS_BIT_DS18B20_READ_REQUESTED (1 << 4)
+#define SYS_BIT_DHT11_READ_REQUESTED (1 << 5)
 
 // should be called early in app_main()
 void system_state_init(void);

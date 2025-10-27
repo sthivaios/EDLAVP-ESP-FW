@@ -15,17 +15,22 @@
 
 static const char *TAG = "timer_manager";
 
-static void sensor_timer_callback(void *arg) {
-  system_set_bits(SYS_BIT_SENSOR_READ_REQUESTED);
+static void ds18b20_timer_callback(void *arg) {
+  system_set_bits(SYS_BIT_DS18B20_READ_REQUESTED);
 }
 
-void setup_readout_timer(void) {
-  // timer config
+static void dht11_timer_callback(void *arg) {
+  system_set_bits(SYS_BIT_DHT11_READ_REQUESTED);
+}
+
+static void setup_ds18b20_timer(void) {
+  // DS18B20 Timer
+
   const esp_timer_create_args_t timer_args = {
-      .callback = &sensor_timer_callback, // the callback
-      .arg = NULL,                        // arguments passed to the callback
-      .dispatch_method = ESP_TIMER_TASK,  // run in the esp_timer task
-      .name = "sensor_timer"              // timer name for debugging
+      .callback = &ds18b20_timer_callback, // the callback
+      .arg = NULL,                         // arguments passed to the callback
+      .dispatch_method = ESP_TIMER_TASK,   // run in the esp_timer task
+      .name = "sensor_timer_ds18b20"       // timer name for debugging
   };
 
   // create the timer
@@ -38,4 +43,31 @@ void setup_readout_timer(void) {
       esp_timer_start_periodic(timer, CONFIG_SOFTWARE_DS18B20_READOUT_INTERVAL *
                                           1000000ULL)); // microseconds
   ESP_LOGI(TAG, "Started the readout timer successfully");
+}
+
+static void setup_dht11_timer(void) {
+  // DHT11 Timer
+
+  const esp_timer_create_args_t timer_args = {
+      .callback = &dht11_timer_callback, // the callback
+      .arg = NULL,                       // arguments passed to the callback
+      .dispatch_method = ESP_TIMER_TASK, // run in the esp_timer task
+      .name = "sensor_timer_dht11"       // timer name for debugging
+  };
+
+  // create the timer
+  esp_timer_handle_t timer;
+  ESP_ERROR_CHECK(esp_timer_create(&timer_args, &timer));
+  ESP_LOGI(TAG, "Created the readout timer successfully");
+
+  // start timer
+  ESP_ERROR_CHECK(
+      esp_timer_start_periodic(timer, CONFIG_SOFTWARE_DHT11_READOUT_INTERVAL *
+                                          1000000ULL)); // microseconds
+  ESP_LOGI(TAG, "Started the readout timer successfully");
+}
+
+void setup_readout_timers(void) {
+  setup_ds18b20_timer();
+  setup_dht11_timer();
 }
